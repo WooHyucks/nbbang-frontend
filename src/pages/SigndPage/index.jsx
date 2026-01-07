@@ -4,7 +4,7 @@ import {
     NaverLogin,
     KakaoLogin,
     GoogleLogin,
-} from '../../components/socialLogin/SocialPlatformLogin';
+} from '../../components/SocialLogin/SocialPlatformLogin';
 import { Link, useNavigate } from 'react-router-dom';
 import SigndLogo from '../../components/auth/SigndLogo';
 import { sendEventToAmplitude, AmplitudeSetUserId } from '@/utils/amplitude';
