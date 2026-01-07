@@ -6,7 +6,7 @@ import {
     GoogleLogin,
 } from '../../components/SocialLogin/SocialPlatformLogin';
 import { Link, useNavigate } from 'react-router-dom';
-import SigndLogo from '../../components/auth/SigndLogo';
+import SigndLogo from '../../components/Auth/SigndLogo';
 import { sendEventToAmplitude, AmplitudeSetUserId } from '@/utils/amplitude';
 import { postGuestLogin, Token } from '../../api/api';
 import Cookies from 'js-cookie';
