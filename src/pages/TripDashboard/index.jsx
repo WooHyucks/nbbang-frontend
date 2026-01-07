@@ -107,13 +107,17 @@ const TripDashboard = () => {
     };
 
     // 링크 생성 및 공유 핸들러들
+    // NOTE: 공유/결과 페이지는 임시로 Supabase Functions 도메인으로 고정
+    const PUBLIC_TRIP_BASE_URL =
+        'https://qdvwwnylfhhevwzdfumm.supabase.co/functions/v1';
+
     const getSharePageLink = () =>
         tripInfo?.uuid
-            ? `${window.location.origin}/meeting/share/trip?uuid=${tripInfo.uuid}`
+            ? `${PUBLIC_TRIP_BASE_URL}/meeting/share/trip?uuid=${tripInfo.uuid}`
             : null;
     const getResultPageLink = () =>
         tripInfo?.uuid
-            ? `${window.location.origin}/meeting/trip-page?uuid=${tripInfo.uuid}`
+            ? `${PUBLIC_TRIP_BASE_URL}/meeting/trip-page?uuid=${tripInfo.uuid}`
             : null;
 
     const handleCopyShareLink = async () => {
