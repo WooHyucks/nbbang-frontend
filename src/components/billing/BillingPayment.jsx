@@ -8,7 +8,7 @@ import {
     putPaymentOrderData,
 } from '../../api/api';
 import BillingInputBox from '../common/BillingInputBox';
-import PaymentFix from '../modal/PaymentFixModal';
+import PaymentFix from '../Modal/PaymentFixModal';
 import { truncate } from '../Meeting';
 import Lottie from 'lottie-react';
 import animationData from '../../assets/animations/card.json';

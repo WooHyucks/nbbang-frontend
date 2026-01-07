@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import UserSettingModal from './modal/UserSettingModal';
+import UserSettingModal from './Modal/UserSettingModal';
 import styled, { keyframes } from 'styled-components';
 import {
     getMeetingData,
@@ -8,7 +8,7 @@ import {
     deleteMeetingData,
     PostSimpleSettlementData,
 } from '../api/api';
-import BillingNameModal from './modal/BillingNameModal';
+import BillingNameModal from './Modal/BillingNameModal';
 import { motion, AnimatePresence } from 'framer-motion';
 import { AiOutlineEdit } from 'react-icons/ai';
 import { RiDeleteBinLine } from 'react-icons/ri';

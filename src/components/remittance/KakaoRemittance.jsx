@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import BillingKakaoModal from '../modal/BillingKakaoModal';
+import BillingKakaoModal from '../Modal/BillingKakaoModal';
 import { sendEventToAmplitude } from '@/utils/amplitude';
 
 const KakaoRemittance = ({

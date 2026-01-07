@@ -9,7 +9,7 @@ import {
 } from '../api/api';
 import Cookies from 'js-cookie';
 import Nav from './Nav';
-import BillingNameModal from './modal/BillingNameModal';
+import BillingNameModal from './Modal/BillingNameModal';
 
 const MainContainer = styled.div`
     position: relative;

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import { useEffect, useState } from 'react';
-import AgreementModal from '../modal/AgreementModal';
+import AgreementModal from '../Modal/AgreementModal';
 import { AmplitudeSetUserId, sendEventToAmplitude } from '@/utils/amplitude';
 import RedirectPage from '../common/RedirectPage';
 

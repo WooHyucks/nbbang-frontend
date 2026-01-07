@@ -8,7 +8,7 @@ import {
     getPaymentData,
 } from '../../api/api';
 import BillingInputBox from '../common/BillingInputBox';
-import BillingMemberFix from '../modal/BillingMemberFixModal';
+import BillingMemberFix from '../Modal/BillingMemberFixModal';
 import Lottie from 'lottie-react';
 import animationData from '../../assets/animations/time.json';
 import ToastPopUp from '../common/ToastPopUp';

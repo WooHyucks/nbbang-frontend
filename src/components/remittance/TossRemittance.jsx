@@ -1,5 +1,5 @@
 import React from 'react';
-import BillingTossModal from '../modal/BillingTossModal';
+import BillingTossModal from '../Modal/BillingTossModal';
 import { sendEventToAmplitude } from '@/utils/amplitude';
 
 // 계좌번호 마스킹 함수 (앞 5자리 + 나머지 별표)
