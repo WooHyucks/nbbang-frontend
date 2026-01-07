@@ -1,0 +1,10 @@
+[
+    {
+        "relation": ["delegate_permission/common.handle_all_urls"],
+        "target": {
+            "namespace": "android_app",
+            "package_name": "nbbang.middle",
+            "sha256_cert_fingerprints": ["BF:BE:69:8B:34:BA:01:EE:2B:24:17:03:BC:13:FD:AB:22:82:78:F4:E5:28:46:EF:93:35:04:EB:F5:BF:D7:81"]
+        }
+    }
+]
