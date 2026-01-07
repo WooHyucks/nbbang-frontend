@@ -88,46 +88,25 @@ export const getTripDashboardByUuid = async (uuid, timestamp = 0) => {
 };
 
 // 공유 페이지용 trip 조회 (로그인 없이)
-// 임시로 Supabase Functions 도메인 직접 사용
 export const getTripByUuid = async (uuid) => {
-    const response = await axios.get(
-        `${TRIP_API_BASE_URL}/meeting/trip-page?uuid=${uuid}`,
-        {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            withCredentials: false,
-        },
+    const response = await tripApiInstance.get(
+        `/meeting/trip-page?uuid=${uuid}`,
     );
     return response.data;
 };
 
 // 공유 페이지용 멤버 조회 (인증 없이)
-// 임시로 Supabase Functions 도메인 직접 사용
 export const getMembersByUuid = async (uuid) => {
-    const response = await axios.get(
-        `${TRIP_API_BASE_URL}/meeting/trip-page?uuid=${uuid}&type=members`,
-        {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            withCredentials: false,
-        },
+    const response = await tripApiInstance.get(
+        `/meeting/trip-page?uuid=${uuid}&type=members`,
     );
     return response.data;
 };
 
 // 공유 페이지용 지출 조회 (인증 없이)
-// 임시로 Supabase Functions 도메인 직접 사용
 export const getPaymentsByUuid = async (uuid) => {
-    const response = await axios.get(
-        `${TRIP_API_BASE_URL}/meeting/trip-page?uuid=${uuid}&type=payments`,
-        {
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            withCredentials: false,
-        },
+    const response = await tripApiInstance.get(
+        `/meeting/trip-page?uuid=${uuid}&type=payments`,
     );
     return response.data;
 };
@@ -235,7 +214,6 @@ export const getTripResultByUuid = async (uuid) => {
 };
 
 // 공개용 정산 결과 조회 (인증 불필요, UUID 기반)
-// 임시로 Supabase Functions 도메인 직접 사용
 export const getPublicTripResult = async (uuid) => {
     const response = await axios.get(
         `${TRIP_API_BASE_URL}/meeting/share/trip?uuid=${uuid}`,

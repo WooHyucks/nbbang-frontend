@@ -414,9 +414,9 @@ const CreateTripWizard = ({
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between mb-2">
                                                         <div className="flex items-center gap-2">
-                                                            <span className="text-base font-semibold text-gray-900 truncate">
-                                                                {name}
-                                                            </span>
+                                                        <span className="text-base font-semibold text-gray-900 truncate">
+                                                            {name}
+                                                        </span>
                                                             {index === 0 && (
                                                                 <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded-full">
                                                                     총무
