@@ -8,6 +8,7 @@ let isRedirecting = false;
 
 const axiosData = () => {
     const instance = axios.create({
+        // baseURL: 'http://localhost:3001',
         baseURL: 'https://qdvwwnylfhhevwzdfumm.supabase.co/functions/v1',
         headers: {
             Authorization: `Bearer ${Token()}`,

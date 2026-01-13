@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import { getTripDashboardByUuid } from '../../api/tripApi';
 import { POPULAR_COUNTRIES } from '../../constants/countries';
 import { RefreshCw, Loader2 } from 'lucide-react';
 import ToastPopUp from '@/components/common/ToastPopUp';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const SharedTripPage = () => {
     const [searchParams] = useSearchParams();
@@ -13,8 +14,14 @@ const SharedTripPage = () => {
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [showToast, setShowToast] = useState(false);
 
-    // 대시보드 데이터 조회 (UUID 기반, 인증 불필요)
-    // refreshInterval: 3000 (3초마다 자동 갱신)
+    // 무한 스크롤을 위한 상태
+    const [payments, setPayments] = useState([]);
+    const [pagination, setPagination] = useState(null);
+    const [isLoadingMore, setIsLoadingMore] = useState(false);
+    const paymentsEndRef = useRef(null);
+
+    // 대시보드 데이터 조회 (첫 페이지만)
+    // 수동 새로고침만 사용 (최신화 하기 버튼)
     const {
         data: dashboardData,
         isLoading,
@@ -22,12 +29,19 @@ const SharedTripPage = () => {
         mutate,
     } = useSWR(
         uuid ? `shared-dashboard-${uuid}` : null,
-        () => getTripDashboardByUuid(uuid),
+        () => getTripDashboardByUuid(uuid, 10, 0),
         {
-            refreshInterval: 3000,
-            revalidateOnFocus: true,
+            revalidateOnFocus: false,
         },
     );
+
+    // 초기 데이터 로드 시 결제 내역과 페이지네이션 정보 설정
+    useEffect(() => {
+        if (dashboardData) {
+            setPayments(dashboardData.recent_payments || []);
+            setPagination(dashboardData.pagination || null);
+        }
+    }, [dashboardData]);
 
     // 국가 정보 찾기
     const countryInfo = dashboardData?.currency
@@ -36,9 +50,58 @@ const SharedTripPage = () => {
 
     // 데이터 추출 (API가 주는 값을 그대로 사용)
     const publicWallet = dashboardData?.public_wallet || {};
-    const recentPayments = dashboardData?.recent_payments || [];
     const membersWalletStatus = dashboardData?.members_wallet_status || [];
     const myPublicStatus = dashboardData?.my_public_status;
+
+    // 다음 페이지 로드 함수
+    const loadMorePayments = useCallback(async () => {
+        if (isLoadingMore || !pagination?.has_more || !uuid) {
+            return;
+        }
+
+        setIsLoadingMore(true);
+        try {
+            const nextOffset = pagination.offset + pagination.limit;
+            const data = await getTripDashboardByUuid(uuid, 10, nextOffset);
+
+            if (data.recent_payments && data.recent_payments.length > 0) {
+                setPayments((prev) => [...prev, ...data.recent_payments]);
+                setPagination(data.pagination);
+            }
+        } catch (error) {
+            console.error('결제 내역 로드 실패:', error);
+        } finally {
+            setIsLoadingMore(false);
+        }
+    }, [uuid, pagination, isLoadingMore]);
+
+    // 스크롤 감지 및 무한 스크롤
+    useEffect(() => {
+        const handleScroll = () => {
+            if (
+                !paymentsEndRef.current ||
+                isLoadingMore ||
+                !pagination?.has_more
+            ) {
+                return;
+            }
+
+            const rect = paymentsEndRef.current.getBoundingClientRect();
+            // 뷰포트 하단에 가까워지면 로드 (100px 여유)
+            const isNearBottom = rect.top <= window.innerHeight + 100;
+
+            if (isNearBottom) {
+                loadMorePayments();
+            }
+        };
+
+        // 스크롤 이벤트 리스너 추가
+        window.addEventListener('scroll', handleScroll, { passive: true });
+        // 초기 체크 (이미 하단에 있는 경우)
+        handleScroll();
+
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, [loadMorePayments, isLoadingMore, pagination]);
 
     // 남은 비율 계산 (burn_rate가 있으면 사용, 없으면 간단 계산)
     const remainingPercentage = publicWallet.burn_rate
@@ -85,7 +148,10 @@ const SharedTripPage = () => {
         setIsRefreshing(true);
         try {
             const timestamp = Date.now();
-            await mutate(() => getTripDashboardByUuid(uuid, timestamp), {
+            const data = await getTripDashboardByUuid(uuid, 10, 0, timestamp);
+            setPayments(data.recent_payments || []);
+            setPagination(data.pagination || null);
+            await mutate(() => data, {
                 revalidate: true,
             });
             // 성공 후 토스트 표시
@@ -409,97 +475,107 @@ const SharedTripPage = () => {
                         최근 지출 내역
                     </h2>
                     <div className="space-y-3">
-                        {recentPayments.length === 0 ? (
+                        {isLoading && payments.length === 0 ? (
+                            // 스켈레톤 UI
+                            Array.from({ length: 5 }).map((_, index) => (
+                                <div
+                                    key={index}
+                                    className="border rounded-xl p-4 border-gray-200 bg-gray-50/30"
+                                >
+                                    <div className="flex items-start justify-between">
+                                        <div className="flex-1">
+                                            <div className="flex items-center gap-2 mb-3">
+                                                <Skeleton className="h-5 w-16 rounded-full bg-gray-200" />
+                                                <Skeleton className="h-5 w-20 rounded-full bg-gray-200" />
+                                            </div>
+                                            <Skeleton className="h-5 w-32 mb-2 rounded bg-gray-200" />
+                                            <Skeleton className="h-4 w-24 rounded bg-gray-200" />
+                                        </div>
+                                        <div className="text-right">
+                                            <Skeleton className="h-6 w-20 mb-2 rounded bg-gray-200" />
+                                            <Skeleton className="h-4 w-16 rounded bg-gray-200" />
+                                        </div>
+                                    </div>
+                                </div>
+                            ))
+                        ) : payments.length === 0 ? (
                             <p className="text-center text-gray-500 py-8">
                                 아직 지출이 없습니다.
                             </p>
                         ) : (
-                            recentPayments.map((payment) => {
-                                const isPublic =
-                                    payment.type === 'PUBLIC' ||
-                                    payment.is_public === true;
-                                const isKRW = payment.currency === 'KRW';
+                            <>
+                                {payments.map((payment) => {
+                                    const isPublic =
+                                        payment.type === 'PUBLIC' ||
+                                        payment.is_public === true;
+                                    const isKRW = payment.currency === 'KRW';
 
-                                // 멤버 정보는 members_wallet_status에서 찾기
-                                const payer = membersWalletStatus.find(
-                                    (m) =>
-                                        m.member_id === payment.pay_member_id,
-                                );
+                                    // 멤버 정보는 members_wallet_status에서 찾기
+                                    const payer = membersWalletStatus.find(
+                                        (m) =>
+                                            m.member_id ===
+                                            payment.pay_member_id,
+                                    );
 
-                                return (
-                                    <div
-                                        key={payment.id}
-                                        className={`border rounded-xl p-4 ${
-                                            isPublic
-                                                ? 'border-blue-200 bg-blue-50/30'
-                                                : 'border-gray-200 bg-gray-50/30 opacity-70'
-                                        }`}
-                                    >
-                                        <div className="flex items-start justify-between mb-2">
-                                            <div className="flex-1">
-                                                <div className="flex items-center gap-2 mb-1">
-                                                    {isPublic ? (
-                                                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 text-blue-700">
-                                                            🟢 공금
-                                                        </span>
-                                                    ) : (
-                                                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-600">
-                                                            ⚪ 개인
-                                                            {payer?.name
-                                                                ? ` - ${payer.name}`
-                                                                : ''}
-                                                        </span>
-                                                    )}
-                                                    {/* KRW 뱃지 추가 */}
-                                                    {isKRW && (
-                                                        <span className="px-2 py-0.5 rounded text-xs font-semibold bg-purple-100 text-purple-700">
-                                                            🇰🇷 원화
-                                                        </span>
-                                                    )}
-                                                </div>
-                                                <div
-                                                    className={`font-semibold text-left mt-4 ${
-                                                        isPublic
-                                                            ? 'text-gray-900'
-                                                            : 'text-gray-600'
-                                                    }`}
-                                                >
-                                                    {payment.place ||
-                                                        payment.name}
-                                                </div>
-                                                {payment.name &&
-                                                    payment.place !==
-                                                        payment.name && (
-                                                        <div className="text-sm text-gray-500 text-left mt-4">
-                                                            {payment.name}
-                                                        </div>
-                                                    )}
-                                                {!isPublic && (
-                                                    <div className="text-xs text-gray-400 mt-1 text-left">
-                                                        (이건 나중에 정산돼요)
+                                    return (
+                                        <div
+                                            key={payment.id}
+                                            className={`border rounded-xl p-4 ${
+                                                isPublic
+                                                    ? 'border-blue-200 bg-blue-50/30'
+                                                    : 'border-gray-200 bg-gray-50/30 opacity-70'
+                                            }`}
+                                        >
+                                            <div className="flex items-start justify-between">
+                                                <div className="flex-1">
+                                                    <div className="flex items-center gap-2 mb-1">
+                                                        {isPublic ? (
+                                                            <span className="px-2 py-0.5 rounded text-xs font-semibold bg-blue-100 text-blue-700">
+                                                                🟢 공금
+                                                            </span>
+                                                        ) : (
+                                                            <span className="px-2 py-0.5 rounded text-xs font-semibold bg-gray-100 text-gray-600">
+                                                                ⚪ 개인
+                                                                {payer?.name
+                                                                    ? ` - ${payer.name}`
+                                                                    : ''}
+                                                            </span>
+                                                        )}
+                                                        {/* KRW 뱃지 추가 */}
+                                                        {isKRW && (
+                                                            <span className="px-2 py-0.5 rounded text-xs font-semibold bg-purple-100 text-purple-700">
+                                                                🇰🇷 원화
+                                                            </span>
+                                                        )}
                                                     </div>
-                                                )}
-                                            </div>
-                                            <div className="text-right">
-                                                {payment.currency === 'KRW' ? (
-                                                    // KRW 결제: price 우선 사용 (개인 결제는 original_price가 null일 수 있음)
                                                     <div
-                                                        className={`font-bold ${
+                                                        className={`font-semibold text-left mt-4 ${
                                                             isPublic
                                                                 ? 'text-gray-900'
                                                                 : 'text-gray-600'
                                                         }`}
                                                     >
-                                                        {formatNumber(
-                                                            payment.price ||
-                                                                payment.original_price ||
-                                                                0,
-                                                        )}
-                                                        원
+                                                        {payment.place ||
+                                                            payment.name}
                                                     </div>
-                                                ) : (
-                                                    // 외화 결제: 외화 금액 + 환전 금액
-                                                    <>
+                                                    {payment.name &&
+                                                        payment.place !==
+                                                            payment.name && (
+                                                            <div className="text-sm text-gray-500 text-left mt-4">
+                                                                {payment.name}
+                                                            </div>
+                                                        )}
+                                                    {!isPublic && (
+                                                        <div className="text-xs text-gray-400 mt-1 text-left">
+                                                            (이건 나중에
+                                                            정산돼요)
+                                                        </div>
+                                                    )}
+                                                </div>
+                                                <div className="text-right">
+                                                    {payment.currency ===
+                                                    'KRW' ? (
+                                                        // KRW 결제: price 우선 사용 (개인 결제는 original_price가 null일 수 있음)
                                                         <div
                                                             className={`font-bold ${
                                                                 isPublic
@@ -508,30 +584,57 @@ const SharedTripPage = () => {
                                                             }`}
                                                         >
                                                             {formatNumber(
-                                                                payment.original_price ||
+                                                                payment.price ||
+                                                                    payment.original_price ||
                                                                     0,
-                                                            )}{' '}
-                                                            {payment.currency ||
-                                                                dashboardData.currency}
-                                                        </div>
-                                                        {payment.price &&
-                                                            payment.price >
-                                                                0 && (
-                                                                <div className="text-xs text-gray-500">
-                                                                    ≈{' '}
-                                                                    {formatNumber(
-                                                                        payment.price,
-                                                                    )}
-                                                                    원
-                                                                </div>
                                                             )}
-                                                    </>
-                                                )}
+                                                            원
+                                                        </div>
+                                                    ) : (
+                                                        // 외화 결제: 외화 금액 + 환전 금액
+                                                        <>
+                                                            <div
+                                                                className={`font-bold ${
+                                                                    isPublic
+                                                                        ? 'text-gray-900'
+                                                                        : 'text-gray-600'
+                                                                }`}
+                                                            >
+                                                                {formatNumber(
+                                                                    payment.original_price ||
+                                                                        0,
+                                                                )}{' '}
+                                                                {payment.currency ||
+                                                                    dashboardData.currency}
+                                                            </div>
+                                                        </>
+                                                    )}
+                                                </div>
                                             </div>
                                         </div>
+                                    );
+                                })}
+                                {/* 무한 스크롤 트리거 */}
+                                <div ref={paymentsEndRef} className="h-4" />
+                                {/* 로딩 중 표시 */}
+                                {isLoadingMore && (
+                                    <div className="flex justify-center py-4">
+                                        <div className="flex items-center gap-2 text-gray-500">
+                                            <div className="w-5 h-5 border-2 border-gray-300 border-t-blue-500 rounded-full animate-spin" />
+                                            <span className="text-sm">
+                                                더 불러오는 중...
+                                            </span>
+                                        </div>
                                     </div>
-                                );
-                            })
+                                )}
+                                {/* 더 이상 데이터가 없을 때 */}
+                                {!pagination?.has_more &&
+                                    payments.length > 0 && (
+                                        <div className="text-center py-4 text-gray-400 text-sm">
+                                            모든 지출 내역을 불러왔습니다.
+                                        </div>
+                                    )}
+                            </>
                         )}
                     </div>
                 </div>

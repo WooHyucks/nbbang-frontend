@@ -70,13 +70,19 @@ export const createTripWithContributions = async (data) => {
 };
 
 // 실시간 대시보드 조회 (인증 불필요, UUID 기반)
+// 페이지네이션 지원: limit, offset 파라미터 추가
 // timestamp 파라미터 추가 (캐시 버스팅용, 기본값은 0)
-export const getTripDashboardByUuid = async (uuid, timestamp = 0) => {
+export const getTripDashboardByUuid = async (
+    uuid,
+    limit = 20,
+    offset = 0,
+    timestamp = 0,
+) => {
     // timestamp가 있으면 URL 뒤에 붙여서 캐시 무시
     const query = timestamp ? `&_t=${timestamp}` : '';
     // 인증 없이 호출하기 위해 별도 인스턴스 사용
     const response = await axios.get(
-        `${TRIP_API_BASE_URL}/meeting/share/trip?uuid=${uuid}${query}`,
+        `${TRIP_API_BASE_URL}/meeting/share/trip?uuid=${uuid}&limit=${limit}&offset=${offset}${query}`,
         {
             headers: {
                 'Content-Type': 'application/json',
@@ -117,9 +123,10 @@ export const getTripDetail = async (meetingId) => {
 };
 
 // 실시간 대시보드 조회 (인증 필요)
-export const getTripDashboard = async (meetingId) => {
+// 페이지네이션 지원: limit, offset 파라미터 추가
+export const getTripDashboard = async (meetingId, limit = 20, offset = 0) => {
     const response = await tripApiInstance.get(
-        `/meeting/${meetingId}/dashboard`,
+        `/meeting/${meetingId}/dashboard?limit=${limit}&offset=${offset}`,
     );
     return response.data;
 };
