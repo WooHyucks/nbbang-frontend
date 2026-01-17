@@ -120,7 +120,7 @@ function SharePage() {
         setMembers((prevMembers) =>
             prevMembers.map((member) =>
                 member.id === memberId
-                    ? { ...member, tipCheck: !member.tipCheck }
+                    ? { ...member, tip_check: !member.tip_check }
                     : member,
             ),
         );
@@ -531,10 +531,10 @@ function SharePage() {
                                                                 )}
                                                             </div>
                                                             {isLeader &&
-                                                                member.depositCopyText && (
+                                                                member.deposit_copy_text && (
                                                                     <p className="text-xs text-slate-500 mt-0.5">
                                                                         {
-                                                                            member.depositCopyText
+                                                                            member.deposit_copy_text
                                                                         }
                                                                     </p>
                                                                 )}
@@ -666,11 +666,11 @@ function SharePage() {
                                                             바로 송금하기
                                                         </p>
                                                         <div className="flex gap-2">
-                                                            {member.tipCheck
-                                                                ? member.tippedKakaoDepositLink && (
+                                                            {member.tip_check
+                                                                ? member.tipped_kakao_deposit_link && (
                                                                       <motion.a
                                                                           href={
-                                                                              member.tippedKakaoDepositLink
+                                                                              member.tipped_kakao_deposit_link
                                                                           }
                                                                           whileTap={{
                                                                               scale: 0.95,
@@ -688,10 +688,10 @@ function SharePage() {
                                                                           </span>
                                                                       </motion.a>
                                                                   )
-                                                                : member.kakaoDepositLink && (
+                                                                : member.kakao_deposit_link && (
                                                                       <motion.a
                                                                           href={
-                                                                              member.kakaoDepositLink
+                                                                              member.kakao_deposit_link
                                                                           }
                                                                           whileTap={{
                                                                               scale: 0.95,
@@ -709,11 +709,11 @@ function SharePage() {
                                                                       </motion.a>
                                                                   )}
 
-                                                            {member.tipCheck
-                                                                ? member.tippedTossDepositLink && (
+                                                            {member.tip_check
+                                                                ? member.tipped_toss_deposit_link && (
                                                                       <motion.a
                                                                           href={
-                                                                              member.tippedTossDepositLink
+                                                                              member.tipped_toss_deposit_link
                                                                           }
                                                                           whileTap={{
                                                                               scale: 0.95,
@@ -730,10 +730,10 @@ function SharePage() {
                                                                           </span>
                                                                       </motion.a>
                                                                   )
-                                                                : member.tossDepositLink && (
+                                                                : member.toss_deposit_link && (
                                                                       <motion.a
                                                                           href={
-                                                                              member.tossDepositLink
+                                                                              member.toss_deposit_link
                                                                           }
                                                                           whileTap={{
                                                                               scale: 0.95,
@@ -751,14 +751,14 @@ function SharePage() {
                                                                       </motion.a>
                                                                   )}
 
-                                                            {member.depositCopyText && (
+                                                            {member.deposit_copy_text && (
                                                                 <motion.button
                                                                     whileTap={{
                                                                         scale: 0.95,
                                                                     }}
                                                                     onClick={() =>
                                                                         handleCopyAccount(
-                                                                            member.depositCopyText,
+                                                                            member.deposit_copy_text,
                                                                         )
                                                                     }
                                                                     className="flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-3 rounded-xl transition-all shadow-sm"

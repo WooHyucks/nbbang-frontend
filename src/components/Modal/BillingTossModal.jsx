@@ -7,6 +7,7 @@ import {
     PatchBillingUserTossDeposit,
 } from '../../api/api';
 import { sendEventToAmplitude } from '@/utils/amplitude';
+import ToastPopUp from '@/components/common/ToastPopUp';
 
 const banks = [
     'KB국민은행',
@@ -41,6 +42,8 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
             banks[0],
     );
     const [actionType, setActionType] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [toastPopUp, setToastPopUp] = useState(false);
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -56,6 +59,7 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
         }
 
         try {
+            setIsSaving(true);
             const formData = {
                 account_number: accountNumber.trim(),
                 bank: selectedBank,
@@ -71,6 +75,7 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
                         action: '이번에만 사용하기',
                     });
                     setTossModalOpen(false);
+                    setToastPopUp(true);
                 }
             } else if (action === '계속해서 사용하기') {
                 await PatchBillingUserTossDeposit(formData);
@@ -83,10 +88,13 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
                         action: '계속해서 사용하기',
                     });
                     setTossModalOpen(false);
+                    setToastPopUp(true);
                 }
             }
         } catch (error) {
             console.error('Api 데이터 수정 실패', error);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -204,9 +212,6 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
                                 className="w-full h-14 px-4 bg-[#f2f2f7] rounded-2xl border-none outline-none text-[15px] placeholder:text-[#c7c7cc] focus:bg-[#e5e5ea] transition-colors"
                                 maxLength={20}
                             />
-                            <p className="mt-2 text-[12px] text-[#8e8e93]">
-                                보안을 위해 앞 5자리만 표시됩니다
-                            </p>
                         </div>
 
                         {/* 사용 방식 선택 */}
@@ -267,20 +272,28 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
                                 ?.accountNumber) && (
                             <button
                                 onClick={handleClear}
-                                className="flex-1 h-14 bg-[#f2f2f7] text-[#ff3b30] rounded-2xl font-semibold text-[15px] hover:bg-red-50 transition-colors active:scale-[0.98]"
+                                disabled={isSaving}
+                                className="flex-1 h-14 bg-[#f2f2f7] text-[#ff3b30] rounded-2xl font-semibold text-[15px] hover:bg-red-50 transition-colors active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
                             >
                                 연동 해제
                             </button>
                         )}
                         <button
                             onClick={handleSubmit}
-                            className="flex-1 h-14 bg-[#0084ff] text-white rounded-2xl font-bold text-[16px] hover:bg-[#0073e6] transition-all active:scale-[0.98] shadow-lg shadow-[#0084ff]/20"
+                            disabled={isSaving}
+                            className="flex-1 h-14 bg-[#0084ff] text-white rounded-2xl font-bold text-[16px] hover:bg-[#0073e6] transition-all active:scale-[0.98] shadow-lg shadow-[#0084ff]/20 disabled:bg-[#a0c8ff] disabled:cursor-not-allowed"
                         >
-                            저장하기
+                            {isSaving ? '저장 중...' : '저장하기'}
                         </button>
                     </div>
                 </motion.div>
             </motion.div>
+            {toastPopUp && (
+                <ToastPopUp
+                    message="저장이 완료되었어요."
+                    setToastPopUp={setToastPopUp}
+                />
+            )}
         </AnimatePresence>
     );
 };

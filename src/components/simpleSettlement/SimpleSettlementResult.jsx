@@ -2,7 +2,9 @@ import React from 'react';
 
 const SimpleSettlementResult = ({ meetingData }) => {
     const price =
-        meetingData?.simple_price == null ? 0 : meetingData?.simple_price;
+        meetingData?.simple_member_amount == null
+            ? 0
+            : meetingData?.simple_member_amount;
     const formattedAmount = new Intl.NumberFormat('ko-KR').format(price);
 
     return (

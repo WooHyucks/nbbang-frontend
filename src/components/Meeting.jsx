@@ -222,6 +222,24 @@ const ActionButtons = styled.div`
     }
 `;
 
+const spinAnimation = keyframes`
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+`;
+
+const SmallSpinner = styled.div`
+    width: 18px;
+    height: 18px;
+    border: 2px solid #f3f4f6;
+    border-top: 2px solid #6c757d;
+    border-radius: 50%;
+    animation: ${spinAnimation} 0.8s linear infinite;
+`;
+
 const IconButton = styled(motion.button)`
     width: 44px;
     height: 44px;
@@ -426,6 +444,7 @@ const Meeting = ({ user }) => {
     const [isFabOpen, setIsFabOpen] = useState(false);
     const [selectedMeetingId, setSelectedMeetingId] = useState(null);
     const [activeFilter, setActiveFilter] = useState('all');
+    const [deletingMeetingId, setDeletingMeetingId] = useState(null);
 
     const getUserDisplayName = () => {
         if (!user) return '게스트';
@@ -534,11 +553,14 @@ const Meeting = ({ user }) => {
     };
 
     const handelDeleteBilling = async (meetingid) => {
+        setDeletingMeetingId(meetingid);
         try {
             await deleteMeetingData(meetingid);
             setMeetings(meetings.filter((data) => data.id !== meetingid));
         } catch (error) {
             console.log('Api 데이터 삭제 실패');
+        } finally {
+            setDeletingMeetingId(null);
         }
     };
 
@@ -619,8 +641,17 @@ const Meeting = ({ user }) => {
                             e.preventDefault();
                             handelDeleteBilling(meeting.id);
                         }}
+                        disabled={deletingMeetingId === meeting.id}
+                        style={{
+                            opacity: deletingMeetingId === meeting.id ? 0.6 : 1,
+                            cursor: deletingMeetingId === meeting.id ? 'not-allowed' : 'pointer',
+                        }}
                     >
-                        <RiDeleteBinLine size={18} />
+                        {deletingMeetingId === meeting.id ? (
+                            <SmallSpinner />
+                        ) : (
+                            <RiDeleteBinLine size={18} />
+                        )}
                     </IconButton>
                 </ActionButtons>
             </MeetingCard>

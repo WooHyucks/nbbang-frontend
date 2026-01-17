@@ -7,6 +7,7 @@ import {
 } from '../../api/tripApi';
 import { formatCurrency } from '../../utils/currencyFormatter';
 import { CURRENCY_MAP } from '../../types/trip.js';
+import { sendEventToAmplitude } from '../../utils/amplitude';
 
 const AddExpenseModal = ({
     isOpen,
@@ -240,8 +241,20 @@ const AddExpenseModal = ({
             // 수정 모드면 updatePayment, 추가 모드면 createPayment
             if (initialPayment?.id) {
                 await updatePayment(meetingId, initialPayment.id, paymentData);
+                // Amplitude 이벤트: 지출 수정 완료
+                sendEventToAmplitude('complete edit trip expense', {
+                    meeting_id: meetingId,
+                    payment_type: paymentType,
+                    currency: selectedCurrency,
+                });
             } else {
                 await createPayment(meetingId, paymentData);
+                // Amplitude 이벤트: 지출 추가 완료
+                sendEventToAmplitude('complete add trip expense', {
+                    meeting_id: meetingId,
+                    payment_type: paymentType,
+                    currency: selectedCurrency,
+                });
             }
 
             if (onSuccess) {
@@ -312,7 +325,7 @@ const AddExpenseModal = ({
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-2xl w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
                 <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between z-10">
                     <h2 className="text-xl font-bold text-gray-900">
                         {initialPayment ? '지출 내역 수정' : '지출 내역 추가'}
@@ -341,7 +354,7 @@ const AddExpenseModal = ({
                             type="date"
                             value={date}
                             onChange={(e) => setDate(e.target.value)}
-                            className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
+                            className="w-full min-w-0 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
                             required
                         />
                     </div>
@@ -350,7 +363,7 @@ const AddExpenseModal = ({
                         <label className="block text-sm font-semibold text-gray-900 mb-2">
                             금액
                         </label>
-                        <div className="flex gap-2">
+                        <div className="flex gap-2 min-w-0">
                             <input
                                 type="text"
                                 inputMode="numeric"
@@ -364,7 +377,7 @@ const AddExpenseModal = ({
                                     setAmount(raw);
                                 }}
                                 placeholder="0"
-                                className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 text-base font-semibold"
+                                className="flex-1 min-w-0 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 text-base font-semibold"
                                 required
                             />
                             <select
@@ -372,7 +385,7 @@ const AddExpenseModal = ({
                                 onChange={(e) => {
                                     setSelectedCurrency(e.target.value);
                                 }}
-                                className="px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs font-semibold bg-white"
+                                className="flex-shrink-0 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 text-xs font-semibold bg-white"
                             >
                                 <option value={countryCurrency}>
                                     {countryCurrency}
@@ -653,14 +666,7 @@ const AddExpenseModal = ({
                                         💱 실시간 환율 적용
                                     </p>
                                     <p className="text-xs text-blue-600">
-                                        당일 환율이 자동으로 적용됩니다: 1{' '}
-                                        {selectedCurrency} ={' '}
-                                        {formatCurrency(
-                                            1 / baseExchangeRate,
-                                            'KR',
-                                            { showDecimals: false },
-                                        )}
-                                        원
+                                        당일 환율이 자동으로 적용됩니다
                                     </p>
                                 </div>
                             )}

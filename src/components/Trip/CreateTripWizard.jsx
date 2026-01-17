@@ -4,6 +4,7 @@ import { POPULAR_COUNTRIES } from '../../constants/countries';
 import { createTripWithContributions } from '../../api/tripApi';
 import { useCommonData } from '../../hooks/useCommonData';
 import CurrencyFormatter from '../common/CurrencyFormatter';
+import { sendEventToAmplitude } from '../../utils/amplitude';
 
 const CreateTripWizard = ({
     isOpen,
@@ -120,11 +121,8 @@ const CreateTripWizard = ({
                 setError('여행 국가를 선택해주세요.');
                 return;
             }
-            if (shouldSkipStep3) {
-                setStep(4);
-            } else {
-                setStep(2);
-            }
+            // 한국이 아닌 경우 스텝 2로 이동
+            setStep(2);
         } else if (step === 2) {
             if (members.length === 0) {
                 setError('최소 1명의 멤버가 필요합니다.');
@@ -134,7 +132,12 @@ const CreateTripWizard = ({
                 setError('1인당 공금 금액을 입력해주세요.');
                 return;
             }
-            setStep(3);
+            // 한국인 경우 스텝 3을 건너뛰고 스텝 4로 이동
+            if (shouldSkipStep3) {
+                setStep(4);
+            } else {
+                setStep(3);
+            }
         } else if (step === 3) {
             if (!totalForeign || Number(totalForeign) <= 0) {
                 setError('환전받은 외화 금액을 입력해주세요.');
@@ -147,9 +150,14 @@ const CreateTripWizard = ({
     const handleBack = () => {
         setError('');
         if (step === 4 && shouldSkipStep3) {
+            // 한국인 경우 스텝 4에서 뒤로가면 스텝 2로
+            setStep(2);
+        } else if (step === 3) {
+            // 스텝 3에서 뒤로가면 스텝 2로
+            setStep(2);
+        } else if (step === 2) {
+            // 스텝 2에서 뒤로가면 스텝 1로
             setStep(1);
-        } else {
-            setStep((prev) => prev - 1);
         }
     };
 
@@ -227,6 +235,13 @@ const CreateTripWizard = ({
             }
 
             if (meetingId && onSuccess) {
+                // Amplitude 이벤트: 여행 생성 완료
+                sendEventToAmplitude('complete create trip', {
+                    meeting_id: meetingId,
+                    country_code: selectedCountry,
+                    member_count: members.length,
+                    has_advance_payments: advancePayments.length > 0,
+                });
                 onSuccess(meetingId);
             } else {
                 setError('여행이 생성되었지만 ID를 찾을 수 없습니다.');
@@ -258,8 +273,8 @@ const CreateTripWizard = ({
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
-                <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+            <div className="bg-white rounded-2xl w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
+                <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
                     <h2 className="text-xl font-bold text-gray-900">
                         {step === 1 && 'Step 1: 여행지 선택'}
                         {step === 2 && 'Step 2: 멤버 및 공금 설정'}
@@ -340,7 +355,7 @@ const CreateTripWizard = ({
                                         </p>
                                     </div>
                                 )}
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 min-w-0">
                                     <input
                                         type="text"
                                         value={newMemberName}
@@ -354,13 +369,13 @@ const CreateTripWizard = ({
                                             }
                                         }}
                                         placeholder="멤버 이름을 입력하세요"
-                                        className="flex-1 px-4 py-3 border-2 border-blue-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400"
+                                        className="flex-1 min-w-0 px-4 py-3 border-2 border-blue-200 rounded-xl focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200 bg-white text-gray-900 placeholder-gray-400"
                                     />
                                     <button
                                         type="button"
                                         onClick={handleAddMember}
                                         disabled={!newMemberName.trim()}
-                                        className="px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-600 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
+                                        className="flex-shrink-0 px-6 py-3 bg-gradient-to-r from-blue-500 to-indigo-500 text-white rounded-xl font-semibold hover:from-blue-600 hover:to-indigo-600 disabled:from-gray-300 disabled:to-gray-400 disabled:cursor-not-allowed transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 active:scale-95"
                                     >
                                         추가
                                     </button>

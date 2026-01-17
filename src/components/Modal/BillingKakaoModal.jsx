@@ -8,6 +8,7 @@ import {
 } from '../../api/api';
 import KakaoIdExplain from './KakaoIdExplain';
 import { sendEventToAmplitude } from '@/utils/amplitude';
+import ToastPopUp from '@/components/common/ToastPopUp';
 
 const BillingKakaoModal = ({ setKakaoModalOpen, meetingName }) => {
     const { meetingId } = useParams();
@@ -18,6 +19,8 @@ const BillingKakaoModal = ({ setKakaoModalOpen, meetingName }) => {
     );
     const [showExplainModal, setShowExplainModal] = useState(false);
     const [actionType, setActionType] = useState(null);
+    const [isSaving, setIsSaving] = useState(false);
+    const [toastPopUp, setToastPopUp] = useState(false);
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -33,6 +36,7 @@ const BillingKakaoModal = ({ setKakaoModalOpen, meetingName }) => {
         }
 
         try {
+            setIsSaving(true);
             const lastSlashIndex = kakaoId.trim().split('/');
             const extractedString = lastSlashIndex[lastSlashIndex.length - 1];
             const formData = { kakao_deposit_id: extractedString };
@@ -47,6 +51,7 @@ const BillingKakaoModal = ({ setKakaoModalOpen, meetingName }) => {
                         action: '이번에만 사용하기',
                     });
                     setKakaoModalOpen(false);
+                    setToastPopUp(true);
                 }
             } else if (action === '계속해서 사용하기') {
                 await PatchBillingUserKaKaoDeposit(formData);
@@ -59,10 +64,13 @@ const BillingKakaoModal = ({ setKakaoModalOpen, meetingName }) => {
                         action: '계속해서 사용하기',
                     });
                     setKakaoModalOpen(false);
+                    setToastPopUp(true);
                 }
             }
         } catch (error) {
             console.log('Api 데이터 수정 실패');
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -228,21 +236,30 @@ const BillingKakaoModal = ({ setKakaoModalOpen, meetingName }) => {
                                     ?.kakaoDepositId) && (
                                 <button
                                     onClick={handleClear}
-                                    className="flex-1 h-14 bg-[#f2f2f7] text-[#ff3b30] rounded-2xl font-semibold text-[15px] hover:bg-red-50 transition-colors active:scale-[0.98]"
+                                    disabled={isSaving}
+                                    className="flex-1 h-14 bg-[#f2f2f7] text-[#ff3b30] rounded-2xl font-semibold text-[15px] hover:bg-red-50 transition-colors active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
                                 >
                                     연동 해제
                                 </button>
                             )}
                             <button
                                 onClick={handleSubmit}
-                                className="flex-1 h-14 bg-[#0084ff] text-white rounded-2xl font-bold text-[16px] hover:bg-[#0073e6] transition-all active:scale-[0.98] shadow-lg shadow-[#0084ff]/20"
+                                disabled={isSaving}
+                                className="flex-1 h-14 bg-[#0084ff] text-white rounded-2xl font-bold text-[16px] hover:bg-[#0073e6] transition-all active:scale-[0.98] shadow-lg shadow-[#0084ff]/20 disabled:bg-[#a0c8ff] disabled:cursor-not-allowed"
                             >
-                                저장하기
+                                {isSaving ? '저장 중...' : '저장하기'}
                             </button>
                         </div>
                     </motion.div>
                 </motion.div>
             </AnimatePresence>
+
+            {toastPopUp && (
+                <ToastPopUp
+                    message="저장이 완료되었어요."
+                    setToastPopUp={setToastPopUp}
+                />
+            )}
 
             {showExplainModal && (
                 <div className="fixed inset-0 z-[60] pointer-events-none">

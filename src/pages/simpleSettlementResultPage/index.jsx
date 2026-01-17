@@ -57,13 +57,13 @@ const SimpleSettlementResultPage = () => {
         simple_price,
         simple_member_count,
         simple_member_amount,
-        tossDepositLink,
-        tippedTossDepositLink,
+        toss_deposit_link,
+        tipped_toss_deposit_link,
         simple_tipped_member_amount,
-        tippedDepositCopyText,
-        depositCopyText,
-        kakaoDepositLink,
-        tippedKakaoDepositLink,
+        tipped_deposit_copy_text,
+        deposit_copy_text,
+        kakao_deposit_link,
+        tipped_kakao_deposit_link,
     } = meetingResultData;
 
     if (
@@ -78,8 +78,9 @@ const SimpleSettlementResultPage = () => {
         );
     }
 
-    const DepositInformationCopy = async (depositCopyText) => {
-        await navigator.clipboard.writeText(depositCopyText);
+    const DepositInformationCopy = async (deposit_copy_text) => {
+        console.log(deposit_copy_text);
+        await navigator.clipboard.writeText(deposit_copy_text);
         if (isApple) {
             setOpenToast(true);
         }
@@ -99,7 +100,12 @@ const SimpleSettlementResultPage = () => {
                         <strong className="text-sky-500">총무</strong>님에게
                     </li>
                     <li className="text-2xl">
-                        {formatAmount(simple_price)}원을
+                        {formatAmount(
+                            tipCheck
+                                ? simple_tipped_member_amount
+                                : simple_member_amount,
+                        )}
+                        원을
                     </li>
                     <li className="text-2xl pb-5">보내주세요</li>
                     {meetingResultData.images ? (
@@ -140,14 +146,14 @@ const SimpleSettlementResultPage = () => {
                             onChange={() => setTipCheck(!tipCheck)}
                         />
                     </div>
-                    {depositCopyText && (
+                    {deposit_copy_text && (
                         <div
                             className="flex items-center justify-between gap-2 py-1"
                             onClick={() =>
                                 DepositInformationCopy(
                                     tipCheck
-                                        ? tippedDepositCopyText
-                                        : depositCopyText,
+                                        ? tipped_deposit_copy_text
+                                        : deposit_copy_text,
                                 )
                             }
                         >
@@ -164,12 +170,12 @@ const SimpleSettlementResultPage = () => {
                 </div>
                 {isMobile && (
                     <div className="flex justify-center items-center gap-4 my-10">
-                        {simple_member_amount > 0 && kakaoDepositLink && (
+                        {simple_member_amount > 0 && kakao_deposit_link && (
                             <a
                                 href={
                                     tipCheck
-                                        ? tippedKakaoDepositLink
-                                        : kakaoDepositLink
+                                        ? tipped_kakao_deposit_link
+                                        : kakao_deposit_link
                                 }
                                 className="w-full flex items-center justify-center gap-2 bg-[#fee502] rounded-2xl pl-5 pr-8 py-4"
                             >
@@ -183,12 +189,12 @@ const SimpleSettlementResultPage = () => {
                                 </span>
                             </a>
                         )}
-                        {simple_member_amount > 0 && tossDepositLink && (
+                        {simple_member_amount > 0 && toss_deposit_link && (
                             <a
                                 href={
                                     tipCheck
-                                        ? tippedTossDepositLink
-                                        : tossDepositLink
+                                        ? tipped_toss_deposit_link
+                                        : toss_deposit_link
                                 }
                                 className="w-full flex items-center justify-center gap-2 bg-[#0050ff] rounded-2xl pl-5 pr-8 py-4"
                             >

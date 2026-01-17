@@ -262,7 +262,7 @@ const CreateTripModal = ({
 
     return (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
+            <div className="bg-white rounded-2xl w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto overflow-x-hidden">
                 {/* Header */}
                 <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
                     <h2 className="text-xl font-bold text-gray-900">
@@ -306,7 +306,7 @@ const CreateTripModal = ({
                                 )}
 
                                 {/* 멤버 입력 필드 */}
-                                <div className="flex gap-2 mb-3">
+                                <div className="flex gap-2 mb-3 min-w-0">
                                     <input
                                         type="text"
                                         value={newMemberName}
@@ -315,11 +315,11 @@ const CreateTripModal = ({
                                         }
                                         onKeyPress={handleKeyPress}
                                         placeholder="멤버 이름 입력"
-                                        className="flex-1 px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
+                                        className="flex-1 min-w-0 px-4 py-2 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
                                     />
                                     <button
                                         onClick={handleAddMember}
-                                        className="px-4 py-2 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors"
+                                        className="flex-shrink-0 px-4 py-2 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 transition-colors"
                                     >
                                         추가
                                     </button>

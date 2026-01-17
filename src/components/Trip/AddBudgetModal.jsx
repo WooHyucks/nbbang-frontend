@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { X, Loader2 } from 'lucide-react';
 import { addBudget } from '../../api/tripApi';
+import { sendEventToAmplitude } from '../../utils/amplitude';
 
 const AddBudgetModal = ({
     isOpen,
@@ -77,16 +78,36 @@ const AddBudgetModal = ({
 
             await addBudget(meetingId, budgetData);
 
+            // Amplitude 이벤트: 공금 추가 완료
+            sendEventToAmplitude('complete add trip budget', {
+                meeting_id: meetingId,
+                foreign_amount: amountValue,
+                member_count: selectedMemberIds.length,
+                currency: currency,
+            });
+
             if (onSuccess) {
                 onSuccess();
             }
             handleClose();
         } catch (err) {
             console.error('공금 추가 실패:', err);
-            setError(
-                err.response?.data?.message ||
-                    '공금 추가에 실패했습니다. 다시 시도해주세요.',
-            );
+            
+            // 403 Forbidden 에러 처리 (관리자 권한 없음)
+            if (err.response?.status === 403) {
+                const errorDetail = err.response?.data?.detail || err.response?.data?.message;
+                if (errorDetail?.includes('관리자가 아닙니다')) {
+                    setError('이 모임의 관리자만 공금을 추가할 수 있습니다.');
+                } else {
+                    setError(errorDetail || '권한이 없습니다. 관리자만 공금을 추가할 수 있습니다.');
+                }
+            } else {
+                setError(
+                    err.response?.data?.detail ||
+                        err.response?.data?.message ||
+                        '공금 추가에 실패했습니다. 다시 시도해주세요.',
+                );
+            }
         } finally {
             setIsLoading(false);
         }

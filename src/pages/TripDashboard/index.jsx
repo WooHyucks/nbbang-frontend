@@ -23,6 +23,7 @@ import {
     DollarSign,
 } from 'lucide-react'; // 아이콘 추가
 import { Skeleton } from '@/components/ui/skeleton';
+import { sendEventToAmplitude } from '../../utils/amplitude';
 
 const TripDashboard = () => {
     const { meetingId } = useParams();
@@ -62,8 +63,13 @@ const TripDashboard = () => {
         if (dashboardData) {
             setPayments(dashboardData.recent_payments || []);
             setPagination(dashboardData.pagination || null);
+            // Amplitude 이벤트: 여행 대시보드 조회
+            sendEventToAmplitude('view trip dashboard', {
+                meeting_id: meetingId,
+                currency: dashboardData.currency || 'KRW',
+            });
         }
-    }, [dashboardData]);
+    }, [dashboardData, meetingId]);
 
     const { data: members = [], mutate: mutateMembers } = useSWR(
         meetingId ? `members-${meetingId}` : null,
@@ -350,8 +356,46 @@ const TripDashboard = () => {
 
     if (error || !dashboardData) {
         return (
-            <div className="min-h-screen flex items-center justify-center">
-                데이터 로딩 실패
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="flex flex-col items-center bg-white px-7 py-10 rounded-2xl shadow-lg border border-gray-100 max-w-xs w-full">
+                    <div className="mb-4">
+                        <svg
+                            width={48}
+                            height={48}
+                            fill="none"
+                            viewBox="0 0 48 48"
+                        >
+                            <circle
+                                cx="24"
+                                cy="24"
+                                r="22"
+                                fill="#e0e7ff"
+                                opacity="0.45"
+                            />
+                            <path
+                                d="M24 16v8"
+                                stroke="#2563eb"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                            />
+                            <circle cx="24" cy="32" r="2.1" fill="#2563eb" />
+                        </svg>
+                    </div>
+                    <div className="text-lg font-bold text-gray-900 mb-1 text-center">
+                        데이터를 불러올 수 없습니다
+                    </div>
+                    <div className="text-gray-400 text-sm text-center mb-6">
+                        네트워크 오류 또는 잘못된 접근입니다.
+                        <br />
+                        잠시 후 다시 시도해 주세요.
+                    </div>
+                    <button
+                        onClick={() => (window.location.href = '/')}
+                        className="w-full px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors"
+                    >
+                        홈으로 가기
+                    </button>
+                </div>
             </div>
         );
     }
@@ -502,7 +546,12 @@ const TripDashboard = () => {
                             우리 공금 현황
                         </h2>
                         <button
-                            onClick={() => setShowBudgetModal(true)}
+                            onClick={() => {
+                                sendEventToAmplitude('click add trip budget', {
+                                    meeting_id: meetingId,
+                                });
+                                setShowBudgetModal(true);
+                            }}
                             className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors text-sm font-semibold shadow-sm hover:shadow-md"
                         >
                             <DollarSign size={18} />
@@ -618,7 +667,7 @@ const TripDashboard = () => {
                                                 )}{' '}
                                                 {dashboardData.currency ||
                                                     'KRW'}{' '}
-                                                남음
+                                                {currentShare >= 0 && '남음'}
                                             </span>
                                         </div>
                                     </div>
@@ -636,6 +685,9 @@ const TripDashboard = () => {
                         </h2>
                         <button
                             onClick={() => {
+                                sendEventToAmplitude('click add trip expense', {
+                                    meeting_id: meetingId,
+                                });
                                 setEditingPayment(null);
                                 setShowExpenseModal(true);
                             }}
@@ -831,7 +883,10 @@ const TripDashboard = () => {
                         meetingId={meetingId}
                         members={members}
                         baseExchangeRate={
-                            dashboardData.public_wallet?.base_exchange_rate || 1
+                            dashboardData.public_wallet
+                                ?.applied_exchange_rate ||
+                            dashboardData.public_wallet?.base_exchange_rate ||
+                            1
                         }
                         countryCurrency={dashboardData.currency || 'KRW'}
                         countryCode={countryInfo?.code}
@@ -850,7 +905,10 @@ const TripDashboard = () => {
                         members={members}
                         currency={dashboardData.currency || 'KRW'}
                         baseExchangeRate={
-                            dashboardData.public_wallet?.base_exchange_rate || 1
+                            dashboardData.public_wallet
+                                ?.applied_exchange_rate ||
+                            dashboardData.public_wallet?.base_exchange_rate ||
+                            1
                         }
                     />
                 </>
@@ -913,15 +971,24 @@ const TripDashboard = () => {
                         <div className="flex gap-3">
                             <button
                                 onClick={handleCancelDelete}
-                                className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-semibold"
+                                disabled={isRefreshingPayments}
+                                className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 disabled:bg-gray-50 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors font-semibold"
                             >
                                 취소
                             </button>
                             <button
                                 onClick={handleConfirmDelete}
-                                className="flex-1 px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-semibold"
+                                disabled={isRefreshingPayments}
+                                className="flex-1 px-4 py-2.5 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-red-400 disabled:cursor-not-allowed transition-colors font-semibold flex items-center justify-center gap-2"
                             >
-                                삭제
+                                {isRefreshingPayments ? (
+                                    <>
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                                        <span>삭제 중...</span>
+                                    </>
+                                ) : (
+                                    '삭제'
+                                )}
                             </button>
                         </div>
                     </div>

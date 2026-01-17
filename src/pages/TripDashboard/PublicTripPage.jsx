@@ -1,10 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import useSWR from 'swr';
 import { getTripResultByUuid } from '../../api/tripApi';
 import { POPULAR_COUNTRIES } from '../../constants/countries';
-import { Copy, CheckCircle2, MessageCircle } from 'lucide-react';
+import { Copy, CheckCircle2, MessageCircle, ArrowRight } from 'lucide-react';
 import ToastPopUp from '@/components/common/ToastPopUp';
+import { sendEventToAmplitude } from '../../utils/amplitude';
 
 const PublicTripPage = () => {
     const [searchParams] = useSearchParams();
@@ -14,11 +15,26 @@ const PublicTripPage = () => {
     const [copiedAccount, setCopiedAccount] = useState(false);
     const [paidMap, setPaidMap] = useState({});
     const [openToast, setOpenToast] = useState(false);
+    const [tippedModeByMember, setTippedModeByMember] = useState({}); // { [memberId]: boolean }
 
     const { data, isLoading, error, mutate } = useSWR(
         uuid ? `trip-result-${uuid}` : null,
         () => getTripResultByUuid(uuid),
     );
+
+    // Amplitude 이벤트: 정산 결과 페이지 조회
+    useEffect(() => {
+        if (data && !isLoading) {
+            sendEventToAmplitude('view trip settlement result', {
+                uuid: uuid,
+                country_code: data.meeting?.country_code || null,
+            });
+        }
+    }, [data, isLoading, uuid]);
+
+    const handleRefresh = async () => {
+        await mutate();
+    };
 
     const formatNumber = (num) => {
         if (num === null || num === undefined) return '0';
@@ -30,11 +46,31 @@ const PublicTripPage = () => {
     const tripCost = data?.trip_cost || {};
     const finalSettlement = data?.final_settlement || [];
 
-    // 총무 정보 계산 (API 제공 manager_info > settlement 내 leader/manager > meeting의 은행정보)
+    // 총무 정보 계산 (결과 응답 내 user/manager_info/settlement/meeting 정보 우선순위 사용)
     const managerInfo = useMemo(() => {
         const managerFromSettlement = finalSettlement.find(
             (m) => m.is_manager || m.leader || m.is_leader,
         );
+
+        // 0순위: 응답 내 user 정보 (이미 이 페이지에서 함께 내려오는 사용자 정보 사용)
+        if (data?.user?.toss_deposit_information) {
+            const user = data.user;
+            return {
+                member_id: user.id,
+                name:
+                    user.name ||
+                    managerFromSettlement?.name ||
+                    meeting.manager_name ||
+                    '총무',
+                bank: user.toss_deposit_information?.bank,
+                account: user.toss_deposit_information?.account_number,
+                kakao_link: user.kakao_deposit_information?.kakao_deposit_id
+                    ? `https://qr.kakaopay.com/${user.kakao_deposit_information.kakao_deposit_id}`
+                    : undefined,
+                toss_bank: user.toss_deposit_information?.bank,
+                toss_account: user.toss_deposit_information?.account_number,
+            };
+        }
 
         // 1순위: API에서 내려주는 manager_info 값을 표준화해서 사용
         if (data?.manager_info) {
@@ -72,10 +108,7 @@ const PublicTripPage = () => {
         // 2순위: settlement/meeting 정보로 추론
         return {
             member_id: managerFromSettlement?.member_id,
-            name:
-                managerFromSettlement?.name ||
-                meeting.manager_name ||
-                '총무',
+            name: managerFromSettlement?.name || meeting.manager_name || '총무',
             bank:
                 managerFromSettlement?.bank ||
                 meeting.bank_name ||
@@ -84,13 +117,10 @@ const PublicTripPage = () => {
                 managerFromSettlement?.account_number ||
                 meeting.account_number ||
                 managerFromSettlement?.toss_account,
-            kakao_link:
-                managerFromSettlement?.kakao_link || meeting.kakao_link,
-            toss_bank:
-                managerFromSettlement?.toss_bank || meeting.bank_name,
+            kakao_link: managerFromSettlement?.kakao_link || meeting.kakao_link,
+            toss_bank: managerFromSettlement?.toss_bank || meeting.bank_name,
             toss_account:
-                managerFromSettlement?.toss_account ||
-                meeting.account_number,
+                managerFromSettlement?.toss_account || meeting.account_number,
         };
     }, [data, finalSettlement, meeting]);
 
@@ -117,12 +147,68 @@ const PublicTripPage = () => {
 
     const { sendList, receiveList } = processSettlement(finalSettlement);
 
+    // 현재 모드에 맞는 멤버 데이터를 반환하는 헬퍼 함수
+    const getMemberData = (member) => {
+        const isTipped = tippedModeByMember[member.member_id] || false;
+
+        if (isTipped) {
+            return {
+                amount:
+                    member.settlement_tipped_amount ?? member.settlement_amount,
+                depositCopyText:
+                    member.tipped_deposit_copy_text ?? member.deposit_copy_text,
+                tossLink:
+                    member.links?.tipped_toss_deposit_link ??
+                    member.links?.toss_deposit_link ??
+                    member.links?.toss ??
+                    null,
+                kakaoLink:
+                    member.links?.tipped_kakao_deposit_link ??
+                    member.links?.kakao_deposit_link ??
+                    member.links?.kakao ??
+                    null,
+            };
+        } else {
+            return {
+                amount: member.settlement_amount,
+                depositCopyText: member.deposit_copy_text,
+                tossLink:
+                    member.links?.toss_deposit_link ??
+                    member.links?.toss ??
+                    null,
+                kakaoLink:
+                    member.links?.kakao_deposit_link ??
+                    member.links?.kakao ??
+                    null,
+            };
+        }
+    };
+
+    // 멤버별 토글 핸들러
+    const toggleMemberTipped = (memberId) => {
+        const newValue = !tippedModeByMember[memberId];
+        setTippedModeByMember((prev) => ({
+            ...prev,
+            [memberId]: newValue,
+        }));
+        // Amplitude 이벤트: 매너 정산 토글
+        sendEventToAmplitude('toggle trip tipped mode', {
+            uuid: uuid,
+            member_id: memberId,
+            is_tipped: newValue,
+        });
+    };
+
     const handleCopyAccount = async (text) => {
         if (!text) return;
         try {
             await navigator.clipboard.writeText(text);
             setCopiedAccount(true);
             setOpenToast(true);
+            // Amplitude 이벤트: 계좌 정보 복사
+            sendEventToAmplitude('copy trip account info', {
+                uuid: uuid,
+            });
             setTimeout(() => setCopiedAccount(false), 1500);
         } catch (err) {
             console.error('계좌 복사 실패', err);
@@ -211,18 +297,64 @@ const PublicTripPage = () => {
     }
 
     if (error || !data) {
+        const status = error?.response?.status;
+        const isNotFound = status === 404;
+
         return (
             <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <p className="text-gray-600 mb-4">
-                        데이터를 불러올 수 없습니다.
+                <div className="flex flex-col items-center justify-center bg-white rounded-2xl shadow-lg p-8 max-w-xs w-full">
+                    <div className="mb-3">
+                        <svg
+                            className="w-12 h-12 text-blue-400 mx-auto"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth={1.3}
+                            viewBox="0 0 48 48"
+                        >
+                            <circle
+                                cx="24"
+                                cy="24"
+                                r="22"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                fill="#e0e7ff"
+                                opacity="0.5"
+                            />
+                            <path
+                                d="M24 14v7"
+                                stroke="currentColor"
+                                strokeWidth="2.5"
+                                strokeLinecap="round"
+                            />
+                            <circle cx="24" cy="32" r="1.8" fill="#2563eb" />
+                        </svg>
+                    </div>
+                    <p className="text-lg font-semibold text-gray-900 mb-1">
+                        {isNotFound
+                            ? '정산 페이지를 찾을 수 없어요'
+                            : '데이터를 불러올 수 없습니다.'}
                     </p>
-                    <button
-                        onClick={() => mutate()}
-                        className="px-4 py-2 bg-blue-500 text-white rounded-xl"
-                    >
-                        다시 시도
-                    </button>
+                    <p className="text-gray-500 text-sm mb-6">
+                        {isNotFound
+                            ? '링크가 만료되었거나 잘못된 주소일 수 있어요. 정산을 만든 사람에게 링크를 다시 받아보세요.'
+                            : '잠시 후 다시 시도해주세요.'}
+                    </p>
+                    <div className="flex flex-col gap-2 w-full">
+                        {!isNotFound && (
+                            <button
+                                onClick={handleRefresh}
+                                className="w-full px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors"
+                            >
+                                다시 시도
+                            </button>
+                        )}
+                        <button
+                            onClick={() => navigate('/')}
+                            className="w-full px-4 py-2 rounded-lg border border-gray-200 text-gray-700 font-semibold bg-white hover:bg-gray-50 transition"
+                        >
+                            홈으로 가기
+                        </button>
+                    </div>
                 </div>
             </div>
         );
@@ -265,7 +397,7 @@ const PublicTripPage = () => {
                     </div>
                 </div>
 
-                {/* 총무 정보 카드 */}
+                {/* 총무 정보 카드 (계좌 복사/송금 버튼 제외) */}
                 <div className="bg-white rounded-2xl p-6 mb-6 shadow-sm border border-blue-100">
                     <div className="flex items-center justify-between mb-3">
                         <h2 className="text-lg font-bold text-gray-900 flex items-center gap-2">
@@ -300,34 +432,6 @@ const PublicTripPage = () => {
                             </span>
                         </div>
                     </div>
-                    {/* 모바일에서만 송금/계좌복사 버튼 노출 (PC에서는 숨김) */}
-                    <div className="mt-4 flex gap-2 md:hidden">
-                        <button
-                            onClick={() =>
-                                handleCopyAccount(
-                                    // deposit_copy_text(또는 depositCopyText)가 있으면 우선 사용
-                                    data?.manager_info?.depositCopyText ||
-                                        data?.manager_info?.deposit_copy_text ||
-                                        managerInfo?.account ||
-                                        managerInfo?.account_number ||
-                                        managerInfo?.toss_account,
-                                )
-                            }
-                            className="flex-1 px-4 py-2 text-sm font-semibold border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                        >
-                            {copiedAccount ? '복사됨!' : '계좌 복사'}
-                        </button>
-                        {managerInfo?.kakao_link && (
-                            <a
-                                href={managerInfo.kakao_link}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="flex-1 px-4 py-2 text-sm font-semibold text-slate-900 bg-[#FEE500] rounded-lg hover:bg-[#FEE500]/90 transition-colors text-center"
-                            >
-                                카카오 송금
-                            </a>
-                        )}
-                    </div>
                 </div>
 
                 {/* 공금 예산 현황 */}
@@ -336,16 +440,53 @@ const PublicTripPage = () => {
                         공금 예산 현황
                     </h2>
                     <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <span className="text-sm text-gray-600">
-                                초기 공금
-                            </span>
-                            <span className="text-lg font-bold text-gray-900">
+                        {/* 총 모은 공금 (초기 + 추가) */}
+                        <div>
+                            <div className="text-sm text-gray-600 mb-1">
+                                총 모은 공금
+                            </div>
+                            <div className="text-2xl font-bold text-gray-900">
                                 {formatNumber(
-                                    publicBudget.initial_gonggeum || 0,
+                                    publicBudget.total_collected ??
+                                        (publicBudget.initial_gonggeum || 0) +
+                                            (publicBudget.added_gonggeum || 0),
                                 )}
                                 원
-                            </span>
+                            </div>
+                            <div className="mt-1 text-xs text-gray-500">
+                                <span>
+                                    🚩 초기{' '}
+                                    {formatNumber(
+                                        publicBudget.initial_gonggeum || 0,
+                                    )}
+                                    원
+                                </span>
+                                {publicBudget.added_gonggeum > 0 && (
+                                    <span className="ml-2 text-blue-600 font-medium">
+                                        ➕ 추가{' '}
+                                        {formatNumber(
+                                            Math.round(
+                                                publicBudget.added_gonggeum ||
+                                                    0,
+                                            ),
+                                        )}{' '}
+                                        {publicBudget.target_currency ||
+                                            meeting.target_currency ||
+                                            'KRW'}{' '}
+                                        (
+                                        {formatNumber(
+                                            Math.floor(
+                                                (publicBudget.added_gonggeum ||
+                                                    0) *
+                                                    (publicBudget.applied_exchange_rate ||
+                                                        meeting.base_exchange_rate ||
+                                                        1),
+                                            ),
+                                        )}
+                                        원)
+                                    </span>
+                                )}
+                            </div>
                         </div>
                         <div className="flex items-center justify-between">
                             <span className="text-sm text-gray-600">
@@ -371,35 +512,55 @@ const PublicTripPage = () => {
                                     원
                                 </span>
                             </div>
-                            {publicBudget.remaining_gonggeum_foreign && (
-                                <div className="text-xs text-gray-500 mt-1 text-right">
-                                    (
-                                    {formatNumber(
-                                        Math.round(
-                                            publicBudget.remaining_gonggeum_foreign,
-                                        ),
-                                    )}{' '}
-                                    {meeting.target_currency || 'KRW'})
-                                </div>
-                            )}
+                            {publicBudget.remaining_gonggeum_foreign !== null &&
+                                publicBudget.remaining_gonggeum_foreign !==
+                                    undefined && (
+                                    <div className="text-xs text-gray-500 mt-1 text-right">
+                                        (
+                                        {formatNumber(
+                                            Math.round(
+                                                publicBudget.remaining_gonggeum_foreign,
+                                            ),
+                                        )}{' '}
+                                        {meeting.target_currency || 'KRW'})
+                                    </div>
+                                )}
                         </div>
+
+                        {/* 실제 총 잔액 강조 */}
+                        <div className="pt-3 mt-3 border-t border-gray-200">
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm font-semibold text-gray-900">
+                                    실제 총 잔액
+                                </span>
+                                <span className="text-xl font-bold text-blue-600">
+                                    {formatNumber(
+                                        Math.floor(
+                                            publicBudget.real_total_remaining_krw ||
+                                                0,
+                                        ),
+                                    )}
+                                    원
+                                </span>
+                            </div>
+                        </div>
+
                         {/* 환율 정보 */}
                         {(publicBudget.applied_exchange_rate ||
                             meeting.base_exchange_rate) && (
                             <div className="pt-3 mt-3 border-t border-gray-200">
-                                <div className="flex items-center justify-between">
+                                <div className="flex items-center justify-between mb-2">
                                     <span className="text-xs text-gray-500">
                                         적용 환율
                                     </span>
                                     <div className="text-right">
                                         <span className="text-sm font-semibold text-gray-700">
-                                            1{' '}
-                                            {meeting.target_currency || 'KRW'} ={' '}
+                                            1 {meeting.target_currency || 'KRW'}{' '}
+                                            ={' '}
                                             {(
-                                                publicBudget
-                                                    .applied_exchange_rate ||
-                                                    meeting.base_exchange_rate ||
-                                                    0
+                                                publicBudget.applied_exchange_rate ||
+                                                meeting.base_exchange_rate ||
+                                                0
                                             ).toFixed(2)}
                                             원
                                         </span>
@@ -413,6 +574,21 @@ const PublicTripPage = () => {
                                                 기준)
                                             </div>
                                         )}
+                                    </div>
+                                </div>
+                                {/* 환율 안내 메시지 */}
+                                <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg">
+                                    <div className="flex items-start gap-2">
+                                        <span className="text-amber-600 text-sm flex-shrink-0">
+                                            💡
+                                        </span>
+                                        <div className="flex-1">
+                                            <p className="text-xs text-amber-800 font-medium leading-relaxed">
+                                                소수점까지 정확히 계산되어
+                                                인터넷 환율과 약간 다를 수
+                                                있습니다.
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -447,7 +623,7 @@ const PublicTripPage = () => {
                             </span>
                         </div>
                         <div className="pt-3 border-t border-gray-200">
-                            <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center justify-between">
                                 <span className="text-sm font-semibold text-gray-700">
                                     총 여행 비용
                                 </span>
@@ -458,20 +634,51 @@ const PublicTripPage = () => {
                                     원
                                 </span>
                             </div>
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs text-gray-500">
-                                    1인당 비용
-                                </span>
-                                <span className="text-sm font-semibold text-gray-700">
-                                    {formatNumber(
-                                        tripCost.per_person_cost || 0,
-                                    )}
-                                    원
-                                </span>
-                            </div>
                         </div>
                     </div>
                 </div>
+
+                {/* 정산 대시보드 보러 가기 */}
+                {uuid && (
+                    <div className="mb-6">
+                        <a
+                            href={`/meeting/share/trip?uuid=${uuid}`}
+                            onClick={() => {
+                                sendEventToAmplitude('click go to settlement dashboard', {
+                                    uuid: uuid,
+                                });
+                            }}
+                            className="flex items-center justify-between bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-4 rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all group"
+                        >
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
+                                    <svg
+                                        className="w-5 h-5"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                    >
+                                        <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"
+                                        />
+                                    </svg>
+                                </div>
+                                <div className="text-left">
+                                    <p className="font-semibold text-base">
+                                        정산 대시보드 보러 가기
+                                    </p>
+                                    <p className="text-xs text-blue-100 mt-0.5">
+                                        실시간 지출 내역 확인하기
+                                    </p>
+                                </div>
+                            </div>
+                            <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                        </a>
+                    </div>
+                )}
 
                 {/* 총무 중심 정산 리스트 */}
                 <div className="space-y-5">
@@ -490,19 +697,27 @@ const PublicTripPage = () => {
                         ) : (
                             <div className="space-y-3">
                                 {sendList.map((member) => {
+                                    const memberData = getMemberData(member);
                                     const amount = Math.abs(
-                                        member.settlement_amount || 0,
+                                        memberData.amount || 0,
                                     );
-                                    // 백엔드에서 내려주는 토스/카카오 링크를 우선 사용
-                                    const tossLink = member.links?.toss || null;
+                                    const tossLink =
+                                        memberData.tossLink || null;
                                     const kakaoLink =
-                                        member.links?.kakao ||
+                                        memberData.kakaoLink ||
                                         managerInfo?.kakao_link;
+                                    const isTipped =
+                                        tippedModeByMember[member.member_id] ||
+                                        false;
 
                                     return (
                                         <div
                                             key={member.member_id}
-                                            className="border rounded-xl p-4 bg-red-50/40 border-red-100"
+                                            className={`border rounded-xl p-4 bg-red-50/40 border-red-100 transition-all ${
+                                                isTipped
+                                                    ? 'ring-2 ring-blue-200'
+                                                    : ''
+                                            }`}
                                         >
                                             <div className="flex items-center justify-between mb-2">
                                                 <div className="flex items-center gap-2">
@@ -513,9 +728,46 @@ const PublicTripPage = () => {
                                                         보내야 함
                                                     </span>
                                                 </div>
-                                                <span className="text-lg font-bold text-red-600">
+                                                <span
+                                                    className={`text-lg font-bold text-red-600 transition-all ${
+                                                        isTipped
+                                                            ? 'scale-105'
+                                                            : ''
+                                                    }`}
+                                                >
                                                     {formatNumber(amount)}원
                                                 </span>
+                                            </div>
+                                            {/* 10원 단위 올림 토글 */}
+                                            <div className="flex items-center justify-between mb-3 p-2 bg-white/50 rounded-lg">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-xs">
+                                                        💰
+                                                    </span>
+                                                    <span className="text-xs text-gray-700 font-medium">
+                                                        십원 단위 올림
+                                                    </span>
+                                                </div>
+                                                <button
+                                                    onClick={() =>
+                                                        toggleMemberTipped(
+                                                            member.member_id,
+                                                        )
+                                                    }
+                                                    className={`relative w-12 h-6 rounded-full transition-all duration-300 ${
+                                                        isTipped
+                                                            ? 'bg-blue-500'
+                                                            : 'bg-gray-200'
+                                                    }`}
+                                                >
+                                                    <div
+                                                        className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow-md transition-transform duration-300 ${
+                                                            isTipped
+                                                                ? 'translate-x-6'
+                                                                : 'translate-x-0.5'
+                                                        }`}
+                                                    />
+                                                </button>
                                             </div>
                                             <div className="text-xs text-gray-600 mb-3">
                                                 총무 계좌로 송금해 주세요.
@@ -525,6 +777,11 @@ const PublicTripPage = () => {
                                                 <button
                                                     disabled={!tossLink}
                                                     onClick={() => {
+                                                        sendEventToAmplitude('click trip toss deposit link', {
+                                                            uuid: uuid,
+                                                            member_id: member.member_id,
+                                                            is_tipped: isTipped,
+                                                        });
                                                         if (tossLink)
                                                             window.location.href =
                                                                 tossLink;
@@ -541,6 +798,13 @@ const PublicTripPage = () => {
                                                     href={kakaoLink || '#'}
                                                     target="_blank"
                                                     rel="noopener noreferrer"
+                                                    onClick={() => {
+                                                        sendEventToAmplitude('click trip kakao deposit link', {
+                                                            uuid: uuid,
+                                                            member_id: member.member_id,
+                                                            is_tipped: isTipped,
+                                                        });
+                                                    }}
                                                     className={`px-3 py-2 rounded-lg text-sm font-semibold text-center ${
                                                         kakaoLink
                                                             ? 'bg-[#FEE500] text-slate-900 hover:bg-[#FEE500]/90'
@@ -552,10 +816,7 @@ const PublicTripPage = () => {
                                                 <button
                                                     onClick={() =>
                                                         handleCopyAccount(
-                                                            member
-                                                                ?.depositCopyText ||
-                                                                member?.deposit_copy_text ||
-                                                                account,
+                                                            memberData.depositCopyText,
                                                         )
                                                     }
                                                     className="px-3 py-2 rounded-lg text-sm font-semibold border border-gray-200 hover:bg-gray-50"
@@ -585,13 +846,21 @@ const PublicTripPage = () => {
                         ) : (
                             <div className="space-y-3">
                                 {receiveList.map((member) => {
+                                    const memberData = getMemberData(member);
                                     const amount = Math.abs(
-                                        member.settlement_amount || 0,
+                                        memberData.amount || 0,
                                     );
+                                    const isTipped =
+                                        tippedModeByMember[member.member_id] ||
+                                        false;
                                     return (
                                         <div
                                             key={member.member_id}
-                                            className="border rounded-xl p-4 bg-blue-50/40 border-blue-100"
+                                            className={`border rounded-xl p-4 bg-blue-50/40 border-blue-100 transition-all ${
+                                                isTipped
+                                                    ? 'ring-2 ring-blue-200'
+                                                    : ''
+                                            }`}
                                         >
                                             <div className="flex items-start justify-between gap-3">
                                                 <div>
@@ -606,7 +875,13 @@ const PublicTripPage = () => {
                                                     <p className="text-sm text-gray-700">
                                                         총무님이 {member.name}
                                                         님에게{' '}
-                                                        <span className="font-bold">
+                                                        <span
+                                                            className={`font-bold transition-all ${
+                                                                isTipped
+                                                                    ? 'scale-105 text-blue-600'
+                                                                    : ''
+                                                            }`}
+                                                        >
                                                             {formatNumber(
                                                                 amount,
                                                             )}
