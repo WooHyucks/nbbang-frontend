@@ -4,6 +4,8 @@ import { Send, Image as ImageIcon, Plane, Calculator, Users, X } from 'lucide-re
 import { PostSimpleSettlementData, postMeetingrData } from '../../api/api';
 import { sendEventToAmplitude } from '@/utils/amplitude';
 import AiAnalysisLimitModal from '../Modal/AiAnalysisLimitModal';
+import { Skeleton } from '../ui/skeleton';
+import MobileImageCropper from '../mobile/MobileImageCropper';
 
 const QUICK_ACTIONS = [
     {
@@ -49,6 +51,30 @@ const InputArea = ({
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [isDragging, setIsDragging] = useState(false);
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+    
+    // 모바일 이미지 크롭 관련 상태
+    const [isCropperOpen, setIsCropperOpen] = useState(false);
+    const [cropperImageFile, setCropperImageFile] = useState(null);
+    
+    // 모바일 환경 감지
+    const [isMobile, setIsMobile] = useState(false);
+    
+    React.useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+    
+    // 디버깅: 크롭 모달 상태 추적
+    React.useEffect(() => {
+        console.log('🔍 크롭 모달 상태:', {
+            isCropperOpen,
+            cropperImageFile: cropperImageFile ? cropperImageFile.name : null,
+        });
+    }, [isCropperOpen, cropperImageFile]);
 
     // 일일 이미지 분석 횟수 관리
     // 백엔드에서 dailyImageAnalysisCount 필드를 반환하지 않을 수 있으므로
@@ -122,11 +148,28 @@ const InputArea = ({
     const handleFileChange = (e) => {
         const files = Array.from(e.target.files || []);
         if (files.length > 0) {
-            addFiles(files);
+            const imageFiles = Array.from(files).filter((file) =>
+                file.type.startsWith('image/')
+            );
+            
+            if (imageFiles.length > 0) {
+                // 모바일 환경에서만 단일 이미지 선택 시 크롭 모달 열기
+                if (isMobile && imageFiles.length === 1) {
+                    console.log('🖼️ 이미지 선택됨, 크롭 모달 열기:', imageFiles[0]);
+                    setCropperImageFile(imageFiles[0]);
+                    setIsCropperOpen(true);
+                } else {
+                    // PC 환경이거나 여러 이미지인 경우 기존 로직 사용
+                    addFiles(imageFiles);
+                }
+            }
         }
         // input 초기화 (같은 파일 다시 선택 가능하도록)
         if (fileInputRef.current) {
             fileInputRef.current.value = '';
+        }
+        if (cameraInputRef.current) {
+            cameraInputRef.current.value = '';
         }
     };
 
@@ -143,6 +186,33 @@ const InputArea = ({
                 return newFiles.slice(0, 5);
             });
         }
+    };
+    
+    // Blob를 File로 변환하는 유틸리티 함수
+    const blobToFile = (blob, fileName) => {
+        return new File([blob], fileName, { type: blob.type });
+    };
+    
+    // 크롭 완료 핸들러
+    const handleCropComplete = (croppedBlob) => {
+        if (cropperImageFile) {
+            // 원본 파일 이름 사용하여 File 객체 생성
+            const croppedFile = blobToFile(croppedBlob, cropperImageFile.name);
+            // 크롭된 파일을 selectedFiles에 추가
+            setSelectedFiles((prev) => {
+                const newFiles = [...prev, croppedFile];
+                return newFiles.slice(0, 5);
+            });
+        }
+        // 크롭 모달 닫기
+        setIsCropperOpen(false);
+        setCropperImageFile(null);
+    };
+    
+    // 크롭 취소 핸들러
+    const handleCropCancel = () => {
+        setIsCropperOpen(false);
+        setCropperImageFile(null);
     };
 
     // 드래그 앤 드롭 핸들러
@@ -300,82 +370,106 @@ const InputArea = ({
                 )}
 
                 {/* 남은 횟수 표시 (인풋 위) - 미팅 데이터 로드 완료 후에만 표시 */}
-                {user && (!meetingId || isMeetingDataLoaded) && (
-                    <div className={`mb-3 px-4 py-3 rounded-xl border transition-all ${
-                        isLimitReached
-                            ? 'bg-gray-50 border-gray-200'
-                            : remainingCount <= 3
-                            ? 'bg-orange-50 border-orange-200'
-                            : 'bg-blue-50 border-blue-200'
-                    }`}>
-                        {isLimitReached ? (
-                            // 횟수를 다 쓴 경우
-                            <div className="flex items-center justify-between gap-3">
-                                <div className="flex items-center gap-2 flex-1 min-w-0">
-                                    <div className="w-2 h-2 rounded-full bg-gray-400 flex-shrink-0" />
-                                    <span className="text-sm font-medium text-gray-600">
-                                        오늘 남은 이미지 분석 횟수를 다 썻어요! 내일 다시 충전 돼요
-                                    </span>
-                                </div>
-                                <button
-                                    onClick={() => setShowFeedbackModal(true)}
-                                    className="flex-shrink-0 flex items-center justify-center gap-1.5 px-3 py-2 bg-[#3182F6] text-white rounded-lg md:hover:bg-[#1E6FFF] transition-all text-xs font-semibold active:scale-95 shadow-sm whitespace-nowrap touch-manipulation min-h-[44px]"
-                                >
-                                    <span>✨</span>
-                                    <span>AI정산 평가하기</span>
-                                </button>
-                            </div>
-                        ) : (
-                            // 횟수가 남은 경우
-                            <>
+                {(!meetingId || isMeetingDataLoaded) && (
+                    <>
+                        {/* user 데이터가 로드 중일 때 스켈레톤 UI */}
+                        {!user && (
+                            <div className="mb-3 px-4 py-3 rounded-xl border bg-blue-50 border-blue-200">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center gap-2">
-                                        <div className={`w-2 h-2 rounded-full ${
-                                            remainingCount <= 3
-                                                ? 'bg-orange-500'
-                                                : 'bg-blue-500'
-                                        }`} />
-                                        <span className={`text-sm font-medium ${
-                                            remainingCount <= 3
-                                                ? 'text-orange-700'
-                                                : 'text-blue-700'
-                                        }`}>
-                                            오늘 남은 이미지 분석 횟수
-                                        </span>
+                                        <Skeleton className="w-2 h-2 rounded-full bg-gray-300" />
+                                        <Skeleton className="h-4 w-[140px] rounded-full bg-gray-300" />
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <span className={`text-lg font-bold ${
-                                            remainingCount <= 3
-                                                ? 'text-orange-600'
-                                                : 'text-blue-600'
-                                        }`}>
-                                            {remainingCount}
-                                        </span>
-                                        <span className={`text-sm font-medium ${
-                                            remainingCount <= 3
-                                                ? 'text-orange-500'
-                                                : 'text-blue-500'
-                                        }`}>
-                                            / {maxDailyLimit}회
-                                        </span>
+                                        <Skeleton className="h-5 w-6 rounded bg-gray-300" />
+                                        <Skeleton className="h-4 w-[40px] rounded-full bg-gray-300" />
                                     </div>
                                 </div>
-                                {/* 진행 바 */}
                                 <div className="mt-2 h-1.5 bg-gray-200 rounded-full overflow-hidden">
-                                    <div
-                                        className={`h-full transition-all duration-300 ${
-                                            remainingCount <= 3
-                                                ? 'bg-orange-500'
-                                                : 'bg-blue-500'
-                                        }`}
-                                        style={{
-                                            width: `${(remainingCount / maxDailyLimit) * 100}%`
-                                        }}
-                                    />
+                                    <Skeleton className="h-full w-[60%] rounded-full bg-gray-300" />
                                 </div>
-                            </>
+                            </div>
                         )}
-                    </div>
+                        
+                        {/* user 데이터가 로드된 후 실제 UI */}
+                        {user && (
+                            <div className={`mb-3 px-4 py-3 rounded-xl border transition-all ${
+                                isLimitReached
+                                    ? 'bg-gray-50 border-gray-200'
+                                    : remainingCount <= 3
+                                    ? 'bg-orange-50 border-orange-200'
+                                    : 'bg-blue-50 border-blue-200'
+                            }`}>
+                                {isLimitReached ? (
+                                    // 횟수를 다 쓴 경우
+                                    <div className="flex items-center justify-between gap-3">
+                                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                                            <div className="w-2 h-2 rounded-full bg-gray-400 flex-shrink-0" />
+                                            <span className="text-sm font-medium text-gray-600">
+                                                오늘 남은 이미지 분석 횟수를 다 썻어요! 내일 다시 충전 돼요
+                                            </span>
+                                        </div>
+                                        <button
+                                            onClick={() => setShowFeedbackModal(true)}
+                                            className="flex-shrink-0 flex items-center justify-center gap-1.5 px-3 py-2 bg-[#3182F6] text-white rounded-lg md:hover:bg-[#1E6FFF] transition-all text-xs font-semibold active:scale-95 shadow-sm whitespace-nowrap touch-manipulation min-h-[44px]"
+                                        >
+                                            <span>✨</span>
+                                            <span>AI정산 평가하기</span>
+                                        </button>
+                                    </div>
+                                ) : (
+                                    // 횟수가 남은 경우
+                                    <>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className={`w-2 h-2 rounded-full ${
+                                                    remainingCount <= 3
+                                                        ? 'bg-orange-500'
+                                                        : 'bg-blue-500'
+                                                }`} />
+                                                <span className={`text-sm font-medium ${
+                                                    remainingCount <= 3
+                                                        ? 'text-orange-700'
+                                                        : 'text-blue-700'
+                                                }`}>
+                                                    오늘 남은 이미지 분석 횟수
+                                                </span>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <span className={`text-lg font-bold ${
+                                                    remainingCount <= 3
+                                                        ? 'text-orange-600'
+                                                        : 'text-blue-600'
+                                                }`}>
+                                                    {remainingCount}
+                                                </span>
+                                                <span className={`text-sm font-medium ${
+                                                    remainingCount <= 3
+                                                        ? 'text-orange-500'
+                                                        : 'text-blue-500'
+                                                }`}>
+                                                    / {maxDailyLimit}회
+                                                </span>
+                                            </div>
+                                        </div>
+                                        {/* 진행 바 */}
+                                        <div className="mt-2 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                            <div
+                                                className={`h-full transition-all duration-300 ${
+                                                    remainingCount <= 3
+                                                        ? 'bg-orange-500'
+                                                        : 'bg-blue-500'
+                                                }`}
+                                                style={{
+                                                    width: `${(remainingCount / maxDailyLimit) * 100}%`
+                                                }}
+                                            />
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        )}
+                    </>
                 )}
 
                 {/* 입력 필드 */}
@@ -482,6 +576,16 @@ const InputArea = ({
                     // 모달만 닫으면 됨
                 }}
             />
+            
+            {/* 모바일 이미지 크롭 모달 */}
+            {cropperImageFile && (
+                <MobileImageCropper
+                    imageSrc={cropperImageFile}
+                    isOpen={isCropperOpen}
+                    onCropComplete={handleCropComplete}
+                    onCancel={handleCropCancel}
+                />
+            )}
         </div>
     );
 };
