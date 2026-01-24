@@ -242,11 +242,14 @@ const CreateTripWizard = ({
                     member_count: members.length,
                     has_advance_payments: advancePayments.length > 0,
                 });
+                // onSuccess에서 navigate를 호출하므로, handleClose는 호출하지 않음
+                // (페이지 이동으로 자동으로 모달이 닫힘)
                 onSuccess(meetingId);
+                resetForm();
             } else {
                 setError('여행이 생성되었지만 ID를 찾을 수 없습니다.');
+                handleClose();
             }
-            handleClose();
         } catch (err) {
             console.error('여행 생성 실패:', err);
             setError(err.response?.data?.message || '여행 생성에 실패했습니다.');

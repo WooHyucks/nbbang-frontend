@@ -1,15 +1,15 @@
 import Cookies from 'js-cookie';
 import axios from 'axios';
+import { BASE_URL } from './config';
 
 export let Token = () => Cookies.get('authToken');
 
 // 500 에러 발생 시 리다이렉트를 위한 플래그
 let isRedirecting = false;
 
-const axiosData = () => {
+export const axiosData = () => {
     const instance = axios.create({
-        // baseURL: 'http://localhost:3001',
-        baseURL: 'https://qdvwwnylfhhevwzdfumm.supabase.co/functions/v1',
+        baseURL: BASE_URL,
         headers: {
             Authorization: `Bearer ${Token()}`,
         },
@@ -63,7 +63,7 @@ export const deleteUser = () => {
 // 게스트 로그인은 토큰 없이 호출 가능하므로 별도 axios 인스턴스 사용
 const axiosWithoutAuth = () => {
     const instance = axios.create({
-        baseURL: 'https://qdvwwnylfhhevwzdfumm.supabase.co/functions/v1',
+        baseURL: BASE_URL,
     });
 
     // 응답 인터셉터: 500 에러 감지
@@ -128,6 +128,41 @@ export const PutMeetingNameData = (meetingId, data) => {
 
 export const GetMeetingNameData = (meetingId) => {
     return axiosData().get(`meeting/${meetingId}`);
+};
+
+// AI Meeting API
+export const createAiMeeting = async (dto) => {
+    const response = await axiosData().post('/meeting/ai', dto);
+    return response.data;
+};
+
+export const getMeetingDetail = async (meetingId) => {
+    const response = await axiosData().get(`/meeting/${meetingId}`);
+    return response.data;
+};
+
+// AI Meeting Owner용 상세 조회 (ID 기반, 인증 필요)
+// 엔드포인트: GET /meeting/ai/:id
+export const getAiMeetingById = async (id) => {
+    const response = await axiosData().get(`/meeting/ai/${id}`);
+    return response.data;
+};
+
+// AI Meeting Guest용 공유 페이지 조회 (UUID 기반, 인증 불필요)
+// 엔드포인트: GET /meeting/ai/uuid/:uuid
+export const getAiMeetingByUuid = async (uuid) => {
+    const response = await axiosWithoutAuth().get(`/meeting/ai/uuid/${uuid}`);
+    return response.data;
+};
+
+// AI 정산 수정 (채팅형 수정)
+// 엔드포인트: POST /meeting/:id/modify
+// Body: { prompt: string }
+export const modifyMeetingByAi = async (id, prompt) => {
+    const response = await axiosData().post(`/meeting/${id}/modify`, {
+        prompt: prompt,
+    });
+    return response.data;
 };
 
 export const PatchSimpleSettlementData = (meetingId, data) => {

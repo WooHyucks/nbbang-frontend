@@ -1,10 +1,9 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
+import { BASE_URL } from './config';
 
-// 여행 정산 API Base URL
-// 임시로 Supabase Functions 도메인 사용 (공유 페이지 및 결과 페이지용)
-const TRIP_API_BASE_URL =
-    'https://qdvwwnylfhhevwzdfumm.supabase.co/functions/v1';
+// 여행 정산 API Base URL (통합 설정 사용)
+const TRIP_API_BASE_URL = BASE_URL;
 
 // 토큰 가져오기
 const getToken = () => {

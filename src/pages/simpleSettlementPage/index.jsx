@@ -10,6 +10,7 @@ import BillingResultShare from '@/components/share/BillingResultShare';
 import { PatchSimpleSettlementData, getSimpleSettlementData } from '@/api/api';
 import SimpleSettlementResult from '@/components/simpleSettlement/SimpleSettlementResult';
 import QRCodeModal from '@/components/Modal/QRCodeModal';
+import LoadingSpinner from '@/components/common/LodingSpinner';
 
 const SimpleSettlement = () => {
     const { meetingId } = useParams();
@@ -25,6 +26,7 @@ const SimpleSettlement = () => {
     const [kakaoModalOpen, setKakaoModalOpen] = useState(false);
     const [calendarOpen, setCalendarOpen] = useState(false);
     const [openModal, setOpenModal] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
 
     const handleMeetingDate = (date) => {
         setPatchMeetingData({ ...patchMeetingData, date: date });
@@ -48,6 +50,7 @@ const SimpleSettlement = () => {
     };
 
     const handleGetSimpleSettlement = async () => {
+        setIsLoading(true);
         try {
             const response = await getSimpleSettlementData(meetingId);
             setPatchMeetingData({
@@ -62,6 +65,8 @@ const SimpleSettlement = () => {
             setMeetingData(response.data);
         } catch (error) {
             console.log(error);
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -71,8 +76,16 @@ const SimpleSettlement = () => {
         }
     }, [kakaoModalOpen, tossModalOpen]);
 
+    if (isLoading) {
+        return (
+            <div className="flex flex-col h-full bg-white max-w-[450px] mx-auto text-center justify-center items-center min-h-screen">
+                <LoadingSpinner type="circular" size="medium" color="#3182F6" />
+            </div>
+        );
+    }
+
     return (
-        <>
+        <div className="flex flex-col h-full bg-white max-w-[450px] mx-auto text-center">
             <Header
                 meetingDate={patchMeetingData.date}
                 handleMeetingDate={handleMeetingDate}
@@ -142,7 +155,7 @@ const SimpleSettlement = () => {
             ) : (
                 <div className="pt-12"></div>
             )}
-        </>
+        </div>
     );
 };
 

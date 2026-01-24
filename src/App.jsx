@@ -25,197 +25,69 @@ import TripPage from './pages/TripPage';
 import TripDashboard from './pages/TripDashboard';
 import TripDashboardPage from './pages/TripDashboard/TripDashboardPage';
 import SharedTripPage from './pages/SharedTripPage';
+import SharePage from './pages/SharePage';
+import AiMeetingDetail from './pages/AiMeetingDetail';
 import QRCodeModal from './components/Modal/QRCodeModal';
 import { AmplitudeSetUserId, initializeAmplitude } from './utils/amplitude';
 import { useEffect, useState } from 'react';
 import LoadingSpinner from './components/common/LodingSpinner';
 import { motion } from 'framer-motion';
+import { postGuestLogin } from './api/api';
+import Cookies from 'js-cookie';
 
 function App() {
-    const [amplitudeInitialized, setAmplitudeInitialized] = useState(false);
+    const [isInitializing, setIsInitializing] = useState(true);
 
     useEffect(() => {
-        const initializeAndSetUserId = async () => {
+        const initializeApp = async () => {
             try {
+                // 1. Amplitude 초기화
                 await initializeAmplitude();
+
+                // 2. 토큰 확인 및 게스트 로그인 처리
+                const existingToken = Cookies.get('authToken');
+                
+                if (!existingToken) {
+                    // Case A: 토큰 없음 → 게스트 로그인 자동 실행
+                    try {
+                        const response = await postGuestLogin();
+                        if (response.status === 201) {
+                            const token = response.data;
+                            if (token) {
+                                Cookies.set('authToken', token, {
+                                    expires: 36500, // 약 100년
+                                    path: '/',
+                                    sameSite: 'Strict',
+                                    secure: window.location.protocol === 'https:',
+                                });
+                            }
+                        }
+                    } catch (error) {
+                        console.error('게스트 로그인 실패:', error);
+                        // 게스트 로그인 실패해도 앱은 계속 작동하도록 함
+                    }
+                }
+                // Case B: 토큰 있음 → 기존 토큰 유지
+
+                // 3. Amplitude User ID 설정
                 await AmplitudeSetUserId();
             } catch (error) {
                 console.error('Error in initialization:', error);
             } finally {
-                // Amplitude 초기화 실패해도 앱은 계속 작동하도록 함
-                setAmplitudeInitialized(true);
+                // 모든 초기화 작업 완료
+                setIsInitializing(false);
             }
         };
 
-        initializeAndSetUserId();
+        initializeApp();
     }, []);
 
     return (
-        <div className={amplitudeInitialized ? 'App' : 'flex justify-center'}>
-            {amplitudeInitialized ? (
-                <>
-                    <motion.div
-                        className="hidden xl:block fixed h-full w-[26.1rem] z-10"
-                        style={{ left: 'calc(-35.1rem + 50vw)' }}
-                        initial={{ opacity: 0, x: -50 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.8 }}
-                    >
-                        <motion.img
-                            src="images/N.png"
-                            alt="nbbang"
-                            className="w-[40px] mt-[80px] mb-[20px] drop-shadow-2xl"
-                            initial={{ opacity: 0, scale: 0.5, rotate: -180 }}
-                            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-                            transition={{
-                                delay: 0.3,
-                                duration: 0.8,
-                                type: 'spring',
-                            }}
-                            whileHover={{ scale: 1.1, rotate: 5 }}
-                        />
-
-                        <ul className="flex flex-col text-left gap-8 mt-5">
-                            <motion.li
-                                className="text-white font-bold text-4xl leading-tight"
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.6, duration: 0.6 }}
-                            >
-                                <span className="bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
-                                    빠른 정산
-                                </span>
-                                ,
-                                <br />
-                                <span className="text-blue-100">
-                                    원클릭 송금
-                                </span>{' '}
-                                ⚡
-                            </motion.li>
-
-                            <motion.li
-                                className="text-white font-semibold text-[22px] leading-relaxed"
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.8, duration: 0.6 }}
-                            >
-                                <span className="text-blue-100">
-                                    모임에서 사용된 금액을
-                                </span>
-                                <br />
-                                <span className="text-yellow-200">
-                                    나누어 편리하게 정산
-                                </span>
-                                하는
-                                <br />
-                                <span className="bg-gradient-to-r from-green-300 to-blue-300 bg-clip-text text-transparent font-bold">
-                                    스마트한 웹 어플리케이션
-                                </span>{' '}
-                                🚀
-                            </motion.li>
-
-                            <motion.li
-                                className="text-white font-medium text-lg space-y-3"
-                                initial={{ opacity: 0, y: 30 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 1.0, duration: 0.6 }}
-                            >
-                                <div className="space-y-2">
-                                    {[
-                                        {
-                                            icon: '💳',
-                                            text: '카카오페이 & 토스 간편송금',
-                                            delay: 1.2,
-                                        },
-                                        {
-                                            icon: '📱',
-                                            text: '모바일 완벽 최적화',
-                                            delay: 1.3,
-                                        },
-                                        {
-                                            icon: '🔒',
-                                            text: '안전한 개인정보 보호',
-                                            delay: 1.4,
-                                        },
-                                        {
-                                            icon: '⚡',
-                                            text: '실시간 정산 계산',
-                                            delay: 1.5,
-                                        },
-                                    ].map((feature, index) => (
-                                        <motion.div
-                                            key={index}
-                                            className="flex items-center space-x-3 text-blue-100 hover:text-white transition-colors duration-300"
-                                            initial={{ opacity: 0, x: -20 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{
-                                                delay: feature.delay,
-                                                duration: 0.4,
-                                            }}
-                                            whileHover={{ x: 5 }}
-                                        >
-                                            <span className="text-xl">
-                                                {feature.icon}
-                                            </span>
-                                            <span className="text-base font-medium">
-                                                {feature.text}
-                                            </span>
-                                        </motion.div>
-                                    ))}
-                                </div>
-                            </motion.li>
-                        </ul>
-
-                        <motion.div
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: 1.8, duration: 0.6 }}
-                        >
-                            <QRCodeModal
-                                url="https://play.google.com/store/apps/details?id=nbbang.middle"
-                                imageSrc="images/play_store.png"
-                                className="w-[220px] mt-8 rounded-2xl py-3 bg-gradient-to-r from-gray-900 to-black hover:from-black hover:to-gray-900 transition-all duration-300 transform hover:scale-105 hover:shadow-2xl border border-gray-700"
-                                title="앱 설치하고 더 편하게 정산해보세요"
-                                description="앱 설치하고 더 편하게 정산해보세요"
-                                description2="휴대폰으로 QR 코드를 스캔해서 설치해보세요"
-                            />
-                        </motion.div>
-                    </motion.div>
-
-                    <motion.div
-                        className="hidden sm:block fixed inset-0 bg-gradient-to-br from-[#1e40af] via-[#3b82f6] to-[#60a5fa] text-left overflow-hidden"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        transition={{ duration: 1 }}
-                    >
-                        <div className="absolute inset-0 overflow-hidden">
-                            {[...Array(8)].map((_, i) => (
-                                <motion.div
-                                    key={i}
-                                    className="absolute bg-white rounded-full opacity-5"
-                                    style={{
-                                        width: `${Math.random() * 300 + 100}px`,
-                                        height: `${Math.random() * 300 + 100}px`,
-                                        top: `${Math.random() * 100}%`,
-                                        left: `${Math.random() * 100}%`,
-                                    }}
-                                    animate={{
-                                        y: [0, -30, 0],
-                                        x: [0, 20, 0],
-                                        scale: [1, 1.1, 1],
-                                    }}
-                                    transition={{
-                                        duration: 15 + i * 3,
-                                        repeat: Infinity,
-                                        ease: 'easeInOut',
-                                    }}
-                                />
-                            ))}
-                        </div>
-                    </motion.div>
-
-                    <div className="relative z-30 bg-white min-h-svh xl:left-[16.1rem] xl:right-0">
-                        <AppBar />
+        <div className={isInitializing ? 'flex justify-center' : 'App'}>
+            {isInitializing ? (
+                <LoadingSpinner />
+            ) : (
+                <div className="bg-white w-full">
                         <Router>
                             <Routes>
                                 <Route path="/signd" element={<SigndPage />} />
@@ -233,12 +105,20 @@ function App() {
                                 />
                                 <Route index element={<MainPage />} />
                                 <Route
+                                    path="/meeting/ai/:id"
+                                    element={<MainPage />}
+                                />
+                                <Route
                                     path="/meeting/:meetingId"
                                     element={<BillingPage />}
                                 />
                                 <Route
                                     path="/share"
                                     element={<ShareRouter />}
+                                />
+                                <Route
+                                    path="/share/ai"
+                                    element={<SharePage />}
                                 />
                                 <Route path="/sign-up" element={<SignUp />} />
                                 <Route path="/sign-in" element={<SignIn />} />
@@ -272,9 +152,6 @@ function App() {
                             </Routes>
                         </Router>
                     </div>
-                </>
-            ) : (
-                <LoadingSpinner />
             )}
         </div>
     );
@@ -284,8 +161,12 @@ function ShareRouter() {
     const [searchParams] = useSearchParams();
     const meeting = searchParams.get('meeting');
     const simpleMeeting = searchParams.get('simple-meeting');
+    const ai = searchParams.get('ai');
 
-    if (meeting) {
+    // AI 정산 공유 링크 우선 처리
+    if (ai) {
+        return <SharePage />;
+    } else if (meeting) {
         return <ResultPage meetingId={meeting} />;
     } else if (simpleMeeting) {
         return <SimpleSettlementResultPage simpleMeetingId={simpleMeeting} />;

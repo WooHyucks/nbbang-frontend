@@ -22,6 +22,7 @@ import Lottie from 'lottie-react';
 import animationTime from '../../assets/animations/time.json';
 import animationMoney from '../../assets/animations/money.json';
 import { sendEventToAmplitude } from '@/utils/amplitude';
+import UserPromptBubble from '@/components/common/UserPromptBubble';
 
 const SkeletonCount = 3;
 
@@ -267,7 +268,7 @@ function SharePage() {
                         className="bg-white rounded-3xl shadow-lg shadow-blue-100/50 overflow-hidden mb-6"
                     >
                         <div className="relative h-48 md:h-56 overflow-hidden">
-                            <div className=" w-[500px] h-[300px] flex items-center justify-center bg-[#1740e8]">
+                            <div className=" w-full h-[300px] flex items-center justify-center bg-[#1740e8]">
                                 <img
                                     src="/images/result_top_img.png"
                                     alt="Meeting"
@@ -321,6 +322,16 @@ function SharePage() {
                         <ImageGallery images={meetings.images} />
                     </div>
                 )}
+
+                {/* 사용자 요청사항 말풍선 */}
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.05 }}
+                    className="mb-6"
+                >
+                    <UserPromptBubble userPrompt={meetings?.userPrompt || meetings?.prompt} />
+                </motion.div>
 
                 {/* Billing Summary */}
                 <motion.div
@@ -905,7 +916,7 @@ function SharePage() {
                     className="mt-6 mb-12 text-center"
                 >
                     <motion.a
-                        href="/signd"
+                        href="/"
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => {

@@ -32,7 +32,7 @@ const TripPage = () => {
     };
 
     const handleClose = () => {
-        setShowCreateModal(false);
+        navigate('/');
     };
 
     return (

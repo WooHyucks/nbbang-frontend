@@ -21,8 +21,5 @@ body {
 }
 
 .App {
-    text-align: center;
     height: 100vh;
-    margin: 0 auto;
-    max-width: 650px;
 }

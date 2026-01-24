@@ -3,8 +3,7 @@ import { SocialLoginForm } from './SocialLoginForm';
 
 const KakaoLogin = () => {
     const kakaoClientId =
-        import.meta.env.VITE_KAKAO_CLIENT_ID ||
-        '3d14355e2c9679326b4c15d249b82bc5';
+        import.meta.env.VITE_KAKAO_CLIENT_ID;
     const kakaoRedirectUri =
         import.meta.env.VITE_KAKAO_REDIRECT_URI ||
         'https://nbbang.shop/kakao-redirect';
@@ -34,7 +33,7 @@ const KakaoLogin = () => {
 
 const NaverLogin = () => {
     const naverClientId =
-        import.meta.env.VITE_NAVER_CLIENT_ID || 'QND4X2NgUTIuoNUvS2uz';
+        import.meta.env.VITE_NAVER_CLIENT_ID;
     const naverRedirectUri =
         import.meta.env.VITE_NAVER_REDIRECT_URI ||
         'https://nbbang.shop/naver-redirect';
@@ -56,8 +55,7 @@ const NaverLogin = () => {
 
 const GoogleLogin = () => {
     const googleClientId =
-        import.meta.env.VITE_GOOGLE_CLIENT_ID ||
-        '470039216193-568hnttd1011ddmc5j22nqia9rcjm1ah.apps.googleusercontent.com';
+        import.meta.env.VITE_GOOGLE_CLIENT_ID;
     const googleRedirectUri =
         import.meta.env.VITE_GOOGLE_REDIRECT_URI ||
         'https://nbbang.shop/google-redirect';

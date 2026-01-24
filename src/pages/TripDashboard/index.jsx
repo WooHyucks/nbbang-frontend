@@ -23,7 +23,6 @@ import {
     DollarSign,
 } from 'lucide-react'; // 아이콘 추가
 import { Skeleton } from '@/components/ui/skeleton';
-import { sendEventToAmplitude } from '../../utils/amplitude';
 
 const TripDashboard = () => {
     const { meetingId } = useParams();
@@ -63,13 +62,8 @@ const TripDashboard = () => {
         if (dashboardData) {
             setPayments(dashboardData.recent_payments || []);
             setPagination(dashboardData.pagination || null);
-            // Amplitude 이벤트: 여행 대시보드 조회
-            sendEventToAmplitude('view trip dashboard', {
-                meeting_id: meetingId,
-                currency: dashboardData.currency || 'KRW',
-            });
         }
-    }, [dashboardData, meetingId]);
+    }, [dashboardData]);
 
     const { data: members = [], mutate: mutateMembers } = useSWR(
         meetingId ? `members-${meetingId}` : null,
@@ -222,8 +216,7 @@ const TripDashboard = () => {
 
         if (!window.Kakao.isInitialized()) {
             const kakaoSdkKey =
-                import.meta.env.VITE_KAKAO_SDK_KEY ||
-                '904f6d1fcb87f1741d5c8cfad188ffc2';
+                import.meta.env.VITE_KAKAO_SDK_KEY;
             window.Kakao.init(kakaoSdkKey);
         }
 
@@ -266,8 +259,7 @@ const TripDashboard = () => {
 
         if (!window.Kakao.isInitialized()) {
             const kakaoSdkKey =
-                import.meta.env.VITE_KAKAO_SDK_KEY ||
-                '904f6d1fcb87f1741d5c8cfad188ffc2';
+                import.meta.env.VITE_KAKAO_SDK_KEY;
             window.Kakao.init(kakaoSdkKey);
         }
 
@@ -546,12 +538,7 @@ const TripDashboard = () => {
                             우리 공금 현황
                         </h2>
                         <button
-                            onClick={() => {
-                                sendEventToAmplitude('click add trip budget', {
-                                    meeting_id: meetingId,
-                                });
-                                setShowBudgetModal(true);
-                            }}
+                            onClick={() => setShowBudgetModal(true)}
                             className="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600 transition-colors text-sm font-semibold shadow-sm hover:shadow-md"
                         >
                             <DollarSign size={18} />
@@ -685,9 +672,6 @@ const TripDashboard = () => {
                         </h2>
                         <button
                             onClick={() => {
-                                sendEventToAmplitude('click add trip expense', {
-                                    meeting_id: meetingId,
-                                });
                                 setEditingPayment(null);
                                 setShowExpenseModal(true);
                             }}
