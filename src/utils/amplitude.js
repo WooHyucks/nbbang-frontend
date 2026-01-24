@@ -8,6 +8,17 @@ const ampKey = import.meta.env.DEV
     ? devAmplitudeApiKey || amplitudeApiKey
     : amplitudeApiKey;
 
+// 프로덕션 환경에서 API 키 확인 로그
+if (!import.meta.env.DEV) {
+    if (!ampKey) {
+        console.error(
+            '[Amplitude] Production API key is missing. VITE_AMPLITUDE_API_KEY is not set.',
+        );
+    } else {
+        console.log('[Amplitude] API key is configured for production');
+    }
+}
+
 let isInitialized = false;
 let initializationPromise = null;
 
@@ -18,8 +29,8 @@ export const initializeAmplitude = async () => {
 
     initializationPromise = (async () => {
         if (!ampKey) {
-            console.warn(
-                'Amplitude API key is missing. Please set VITE_AMPLITUDE_API_KEY or VITE_DEV_AMPLITUDE_API_KEY in your .env file.',
+            console.error(
+                '[Amplitude] API key is missing. Please set VITE_AMPLITUDE_API_KEY in your environment variables.',
             );
             return;
         }
@@ -35,8 +46,11 @@ export const initializeAmplitude = async () => {
                 },
             });
             isInitialized = true;
+            if (import.meta.env.DEV) {
+                console.log('[Amplitude] Initialized successfully');
+            }
         } catch (error) {
-            console.error('Amplitude initialization failed:', error);
+            console.error('[Amplitude] Initialization failed:', error);
             isInitialized = false;
         }
     })();
@@ -107,11 +121,9 @@ const getUserInfoForEvent = async () => {
 export const sendEventToAmplitude = async (eventName, properties) => {
     // API 키가 없으면 이벤트 전송하지 않음
     if (!ampKey) {
-        if (import.meta.env.DEV) {
-            console.warn(
-                `Amplitude API key missing. Event "${eventName}" will not be tracked.`,
-            );
-        }
+        console.error(
+            `[Amplitude] API key missing. Event "${eventName}" will not be tracked.`,
+        );
         return;
     }
 
@@ -126,22 +138,19 @@ export const sendEventToAmplitude = async (eventName, properties) => {
             await initializationPromise;
         } catch (error) {
             // 초기화 실패 시 이벤트 전송하지 않음
-            if (import.meta.env.DEV) {
-                console.warn(
-                    `Amplitude initialization failed. Event "${eventName}" will not be tracked.`,
-                );
-            }
+            console.error(
+                `[Amplitude] Initialization failed. Event "${eventName}" will not be tracked.`,
+                error,
+            );
             return;
         }
     }
 
     // 초기화가 안 되었으면 이벤트 전송하지 않음
     if (!isInitialized) {
-        if (import.meta.env.DEV) {
-            console.warn(
-                `Amplitude not initialized. Event "${eventName}" will not be tracked.`,
-            );
-        }
+        console.error(
+            `[Amplitude] Not initialized. Event "${eventName}" will not be tracked.`,
+        );
         return;
     }
 
@@ -157,6 +166,6 @@ export const sendEventToAmplitude = async (eventName, properties) => {
 
         amplitude.track(eventName, eventProperties);
     } catch (error) {
-        console.error('Amplitude 이벤트 전송 실패:', error);
+        console.error('[Amplitude] Event tracking failed:', error);
     }
 };
