@@ -41,12 +41,7 @@ const MainPage = () => {
             }
             
             // 디버깅: 전체 응답 구조 확인
-            console.log('📊 Full Response:', response);
-            console.log('📊 Response Data:', response.data);
-            console.log('📊 User Data:', userData);
-            console.log('📊 dailyImageAnalysisCount:', userData?.dailyImageAnalysisCount);
-            console.log('📊 daily_image_analysis_count:', userData?.daily_image_analysis_count);
-            console.log('📊 lastAiUsageDate:', userData?.lastAiUsageDate);
+       
             
             setUser(userData);
         } catch (error) {

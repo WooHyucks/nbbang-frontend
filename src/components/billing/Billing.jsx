@@ -175,7 +175,12 @@ const Billing = ({ payment, meetingName, setMeetingName }) => {
                 if (!kakao.isInitialized()) {
                     const kakaoSdkKey =
                         import.meta.env.VITE_KAKAO_SDK_KEY;
-                    kakao.init(kakaoSdkKey);
+                    // 환경 변수가 있을 때만 초기화
+                    if (kakaoSdkKey) {
+                        kakao.init(kakaoSdkKey);
+                    } else {
+                        console.warn('카카오 SDK 키가 설정되지 않았습니다.');
+                    }
                 }
             }
         };
