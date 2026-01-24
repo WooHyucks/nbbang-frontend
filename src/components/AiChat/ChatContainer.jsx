@@ -571,7 +571,7 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
     return (
         <div className="flex flex-col h-full bg-white">
             {/* 메시지 리스트 영역 (Gemini 스타일: 중앙 정렬) */}
-            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto w-full relative">
+            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto w-full relative pb-[200px] md:pb-0">
                 {/* 로딩 오버레이 (흰 배경 + 상단 게이지바) - meetingId가 있고 로딩 중일 때 표시 */}
                 {isLoading && meetingId && (
                     <>
@@ -836,22 +836,24 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                 )}
             </div>
 
-            {/* 입력 영역 */}
-            <InputArea
-                value={inputValue}
-                onChange={setInputValue}
-                onSend={handleSendMessage}
-                showSuggestions={messages.length === 0}
-                isLoading={isLoading}
-                user={user}
-                onUserUpdate={onUserUpdate}
-                fileInputRef={fileInputTriggerRef}
-                cameraInputRef={cameraInputTriggerRef}
-                meetingId={meetingId}
-                clearFilesTrigger={clearFilesTrigger}
-                isModifyMode={!!meetingId}
-                isMeetingDataLoaded={!isLoading || !meetingId}
-            />
+            {/* 입력 영역 - 모바일에서는 fixed로 하단 고정 */}
+            <div className="md:relative fixed bottom-0 left-0 right-0 z-40 md:z-auto bg-white md:bg-transparent">
+                <InputArea
+                    value={inputValue}
+                    onChange={setInputValue}
+                    onSend={handleSendMessage}
+                    showSuggestions={messages.length === 0}
+                    isLoading={isLoading}
+                    user={user}
+                    onUserUpdate={onUserUpdate}
+                    fileInputRef={fileInputTriggerRef}
+                    cameraInputRef={cameraInputTriggerRef}
+                    meetingId={meetingId}
+                    clearFilesTrigger={clearFilesTrigger}
+                    isModifyMode={!!meetingId}
+                    isMeetingDataLoaded={!isLoading || !meetingId}
+                />
+            </div>
 
             {/* 입력 검증 모달 */}
             {showValidationModal && (
