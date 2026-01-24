@@ -5,6 +5,7 @@ import LoadingSpinner from '../../components/common/LodingSpinner';
 import { ChevronLeft, X, ChevronRight, Sparkles } from 'lucide-react';
 import DraftCard from '../../components/AiChat/cards/DraftCard';
 import UserPromptBubble from '../../components/common/UserPromptBubble';
+import { sendEventToAmplitude } from '../../utils/amplitude';
 
 /**
  * AI 정산 공유 페이지 (Guest View) - ReadOnly 모드
@@ -224,6 +225,10 @@ const SharePage = () => {
                         <div className="w-full max-w-[90%] sm:max-w-[85%] md:max-w-[75%]">
                             <button
                                 onClick={() => {
+                                    sendEventToAmplitude('click go to ai settlement from result page', {
+                                        uuid: uuid,
+                                        source: 'share_page',
+                                    });
                                     navigate('/');
                                 }}
                                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 active:from-blue-600 active:to-purple-600 transition-all text-sm font-semibold active:scale-95 shadow-sm touch-manipulation min-h-[44px]"

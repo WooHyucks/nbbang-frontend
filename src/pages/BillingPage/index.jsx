@@ -39,6 +39,13 @@ const BillingPage = () => {
                     data?.is_ai === true ||
                     data?.type === 'AI'
                 );
+                
+                // 모임 정산 페이지 조회 이벤트 (AI 타입이 아닐 때만)
+                if (!(data?.meetingType === 'ai' || data?.is_ai === true || data?.type === 'AI')) {
+                    sendEventToAmplitude('view meeting settlement page', {
+                        meeting_id: meetingId,
+                    });
+                }
             } catch (error) {
                 console.error('모임 데이터 가져오기 실패:', error);
             } finally {

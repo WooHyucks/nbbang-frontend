@@ -54,8 +54,7 @@ const NaverLogin = () => {
 };
 
 const GoogleLogin = () => {
-    const googleClientId =
-        import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    
     const googleRedirectUri =
         import.meta.env.VITE_GOOGLE_REDIRECT_URI ||
         'https://nbbang.shop/google-redirect';
@@ -64,7 +63,7 @@ const GoogleLogin = () => {
         typo: 'google',
         src: '/images/google.png',
         comment: '구글 로그인으로 시작하기',
-        socialLoginUrl: `https://accounts.google.com/o/oauth2/v2/auth?response_type=token&scope=https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile&client_id=${googleClientId}&redirect_uri=${googleRedirectUri}`,
+        socialLoginUrl: `https://accounts.google.com/o/oauth2/v2/auth?response_type=token&scope=https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile&client_id=&470039216193-568hnttd1011ddmc5j22nqia9rcjm1ah.apps.googleusercontent.com&redirect_uri=${googleRedirectUri}`,
         containerStyle: {
             backgroundColor: 'white',
             gapSize: '38px',

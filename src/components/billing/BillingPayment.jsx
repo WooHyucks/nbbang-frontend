@@ -16,6 +16,7 @@ import { motion } from 'framer-motion';
 import ToastPopUp from '../common/ToastPopUp';
 import LoadingSpinner from '../common/LodingSpinner';
 import { keyframes } from 'styled-components';
+import { sendEventToAmplitude } from '../../utils/amplitude';
 
 // @hello-pangea/dnd 관련 (react-beautiful-dnd의 React 18+ 호환 포크)
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
@@ -566,6 +567,13 @@ const BillingPayment = ({ member, payment, setPayment, setIsLoading }) => {
                 dataToSend,
             );
             if (responsePostData.status === 201) {
+                sendEventToAmplitude('add meeting payment', {
+                    meeting_id: meetingId,
+                    place: formData.place,
+                    price: formData.price,
+                    pay_member_id: pay_member_id,
+                    attend_member_count: formData.attend_member_ids.length,
+                });
                 setFormData({
                     place: '',
                     price: '',
@@ -592,6 +600,12 @@ const BillingPayment = ({ member, payment, setPayment, setIsLoading }) => {
     const handleDeleteMember = async (paymentId) => {
         try {
             await deletePaymentData(meetingId, paymentId);
+            const deletedPayment = payment.find((p) => p.id === paymentId);
+            sendEventToAmplitude('delete meeting payment', {
+                meeting_id: meetingId,
+                payment_id: paymentId,
+                place: deletedPayment?.place || '',
+            });
             setPayment(payment.filter((data) => data.id !== paymentId));
         } catch (error) {
             console.log('Api 데이터 삭제 실패');

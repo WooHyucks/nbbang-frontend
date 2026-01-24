@@ -1,0 +1,70 @@
+name: Deploy Nbbang to AWS S3
+
+on:
+    push:
+        branches:
+            - master
+
+jobs:
+    deploy:
+        runs-on: ubuntu-latest
+        concurrency:
+            group: deploy-${{ github.ref }}
+            cancel-in-progress: true
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+
+            - name: Delete node_modules and package-lock.json
+              run: |
+                  rm -rf node_modules
+                  rm -f package-lock.json
+
+            - name: Set up Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20.x'
+
+            - name: Install dependencies
+              run: npm install
+              timeout-minutes: 5
+
+            - name: Build Project
+              run: npm run build
+              env:
+                VITE_AMPLITUDE_API_KEY: ${{ secrets.VITE_AMPLITUDE_API_KEY }}
+                VITE_NAVER_CLIENT_ID: ${{ secrets.VITE_NAVER_CLIENT_ID }}
+                VITE_KAKAO_SDK_KEY: ${{ secrets.VITE_KAKAO_SDK_KEY }}
+                VITE_KAKAO_CLIENT_ID: ${{ secrets.VITE_KAKAO_CLIENT_ID }}
+
+            # - name: Configure AWS credentials for develop-v1
+            #   if: github.ref == 'refs/heads/develop-v1'
+            #   uses: aws-actions/configure-aws-credentials@v4
+            #   with:
+            #       aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+            #       aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+            #       aws-region: ap-northeast-2
+
+            - name: Configure AWS credentials for master
+              if: github.ref == 'refs/heads/master'
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                  aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                  aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                  aws-region: ap-northeast-2
+
+            # - name: Upload to S3 (Seoul Region for develop-v1)
+            #   if: github.ref == 'refs/heads/develop-v1'
+            #   run: |
+            #       aws s3 sync ./dist s3://nbbang-develop-v1 --delete
+
+            - name: Upload to S3 (Singapore Region for main)
+              if: github.ref == 'refs/heads/main'
+              run: |
+                  aws s3 sync ./dist s3://nbbang-front  --delete
+
+            - name: Invalidate CloudFront cache for main
+              if: github.ref == 'refs/heads/main'
+              run: |
+                  aws cloudfront create-invalidation --distribution-id E18PPJ750YULTV --paths "/*"

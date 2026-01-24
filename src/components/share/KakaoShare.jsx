@@ -37,8 +37,7 @@ const KakaoShare = ({ meetingName }) => {
             const kakao = window.Kakao;
             if (!kakao.isInitialized()) {
                 const kakaoSdkKey =
-                    import.meta.env.VITE_KAKAO_SDK_KEY ||
-                    '904f6d1fcb87f1741d5c8cfad188ffc2';
+                    import.meta.env.VITE_KAKAO_SDK_KEY 
                 kakao.init(kakaoSdkKey);
             }
         }

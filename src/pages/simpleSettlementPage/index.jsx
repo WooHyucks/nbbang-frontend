@@ -11,6 +11,7 @@ import { PatchSimpleSettlementData, getSimpleSettlementData } from '@/api/api';
 import SimpleSettlementResult from '@/components/simpleSettlement/SimpleSettlementResult';
 import QRCodeModal from '@/components/Modal/QRCodeModal';
 import LoadingSpinner from '@/components/common/LodingSpinner';
+import { sendEventToAmplitude } from '@/utils/amplitude';
 
 const SimpleSettlement = () => {
     const { meetingId } = useParams();
@@ -46,6 +47,11 @@ const SimpleSettlement = () => {
         try {
             await PatchSimpleSettlementData(meetingId, patchMeetingData);
             await handleGetSimpleSettlement();
+            sendEventToAmplitude('complete simple settlement', {
+                meeting_id: meetingId,
+                simple_price: patchMeetingData.simple_price,
+                simple_member_count: patchMeetingData.simple_member_count,
+            });
         } catch (error) {
             console.log(error);
         } finally {
@@ -77,6 +83,9 @@ const SimpleSettlement = () => {
     // 초기 로드만 수행 (모달 열고 닫을 때는 데이터 갱신하지 않음)
     useEffect(() => {
         handleGetSimpleSettlement();
+        sendEventToAmplitude('view simple settlement page', {
+            meeting_id: meetingId,
+        });
     }, []); // 빈 배열로 초기 마운트 시에만 실행
 
     if (isLoading) {

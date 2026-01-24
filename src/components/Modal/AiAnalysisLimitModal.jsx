@@ -26,6 +26,15 @@ const AiAnalysisLimitModal = ({ isOpen, onClose, type, onSwitchToText }) => {
         }
     }, [isOpen]);
 
+    // 모달 열림/닫힘 이벤트 추적
+    useEffect(() => {
+        if (isOpen) {
+            sendEventToAmplitude('open ai settlement survey modal', {
+                limit_type: type || 'personal',
+            });
+        }
+    }, [isOpen, type]);
+
     const handleFeedbackClick = (feedbackType, feedbackText) => {
         // Amplitude 이벤트 전송
         sendEventToAmplitude('ai analysis limit feedback', {
@@ -73,9 +82,20 @@ const AiAnalysisLimitModal = ({ isOpen, onClose, type, onSwitchToText }) => {
     };
 
     const handleTextModeClick = () => {
+        sendEventToAmplitude('click switch to text mode from survey', {
+            limit_type: type || 'personal',
+        });
         if (onSwitchToText) {
             onSwitchToText();
         }
+        onClose();
+    };
+
+    const handleClose = () => {
+        sendEventToAmplitude('close ai settlement survey modal', {
+            limit_type: type || 'personal',
+            has_feedback_input: showFeedbackInput,
+        });
         onClose();
     };
 
@@ -89,7 +109,7 @@ const AiAnalysisLimitModal = ({ isOpen, onClose, type, onSwitchToText }) => {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            onClick={onClose}
+                            onClick={handleClose}
                             className="fixed inset-0 z-[100] bg-black/40 backdrop-blur-sm"
                         />
 
@@ -112,7 +132,7 @@ const AiAnalysisLimitModal = ({ isOpen, onClose, type, onSwitchToText }) => {
                                                 : '오늘 준비된 AI 서버가 매진되었어요! 😱'}
                                         </h3>
                                         <button
-                                            onClick={onClose}
+                                            onClick={handleClose}
                                             className="p-2 -mr-2 text-gray-400 hover:text-gray-600 rounded-lg hover:bg-gray-50 transition-colors active:scale-95"
                                             aria-label="닫기"
                                         >
@@ -164,7 +184,12 @@ const AiAnalysisLimitModal = ({ isOpen, onClose, type, onSwitchToText }) => {
                                             {/* 의견 남기기 섹션 */}
                                             {!showFeedbackInput ? (
                                                 <button
-                                                    onClick={() => setShowFeedbackInput(true)}
+                                                    onClick={() => {
+                                                        sendEventToAmplitude('click ai settlement survey feedback input', {
+                                                            limit_type: 'personal',
+                                                        });
+                                                        setShowFeedbackInput(true);
+                                                    }}
                                                     className="w-full flex items-center justify-center gap-2 px-5 py-3.5 mb-3 bg-white border-2 border-gray-200 text-gray-700 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-all font-semibold active:scale-95"
                                                 >
                                                     <MessageSquare size={18} />
@@ -183,6 +208,9 @@ const AiAnalysisLimitModal = ({ isOpen, onClose, type, onSwitchToText }) => {
                                                     <div className="flex gap-2 mt-2">
                                                         <button
                                                             onClick={() => {
+                                                                sendEventToAmplitude('cancel ai settlement survey feedback input', {
+                                                                    limit_type: 'personal',
+                                                                });
                                                                 setShowFeedbackInput(false);
                                                                 setFeedbackMessage('');
                                                             }}

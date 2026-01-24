@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { putPaymentData } from '../../api/api';
 import useOnClickOutside from '../../hooks/useOnClickOutside';
 import { truncate } from '../Meeting';
+import { sendEventToAmplitude } from '../../utils/amplitude';
 
 const PayMentFixContainer = styled.div`
     z-index: 10;
@@ -352,6 +353,14 @@ const PaymentFix = ({
             };
             const response = await putPaymentData(meetingId, id, dataToSend);
             if (response.status === 200) {
+                sendEventToAmplitude('edit meeting payment', {
+                    meeting_id: meetingId,
+                    payment_id: id,
+                    place: formData.place,
+                    price: formData.price,
+                    pay_member_id: formData.pay_member_id,
+                    attend_member_count: formData.attend_member_ids.length,
+                });
                 setFormData({
                     place: '',
                     price: '',

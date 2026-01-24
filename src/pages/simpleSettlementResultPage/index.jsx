@@ -5,6 +5,7 @@ import LoadingSpinner from '@/components/common/LodingSpinner';
 import SlideCheckbox from '@/components/common/SlideCheckBox';
 import ToastPopUp from '@/components/common/ToastPopUp';
 import { ImageGallery } from '@/components/Modal/ImageModal';
+import { sendEventToAmplitude } from '@/utils/amplitude';
 
 const SettlementDetail = ({ label, value, unit }) => (
     <div className="flex items-center justify-between">
@@ -43,6 +44,9 @@ const SimpleSettlementResultPage = () => {
 
     useEffect(() => {
         handleGetData();
+        sendEventToAmplitude('view simple settlement result', {
+            meeting_id: meeting,
+        });
     }, []);
 
     const formatAmount = (amount) => {
@@ -144,19 +148,30 @@ const SimpleSettlementResultPage = () => {
                         <SlideCheckbox
                             type="checkbox"
                             checked={tipCheck}
-                            onChange={() => setTipCheck(!tipCheck)}
+                            onChange={() => {
+                                const newValue = !tipCheck;
+                                setTipCheck(newValue);
+                                sendEventToAmplitude('toggle simple settlement tipped mode', {
+                                    meeting_id: meeting,
+                                    is_tipped: newValue,
+                                });
+                            }}
                         />
                     </div>
                     {deposit_copy_text && (
                         <div
                             className="flex items-center justify-between gap-2 py-1"
-                            onClick={() =>
+                            onClick={() => {
                                 DepositInformationCopy(
                                     tipCheck
                                         ? tipped_deposit_copy_text
                                         : deposit_copy_text,
-                                )
-                            }
+                                );
+                                sendEventToAmplitude('copy simple settlement account info', {
+                                    meeting_id: meeting,
+                                    is_tipped: tipCheck,
+                                });
+                            }}
                         >
                             <span className="text-gray-400 font-bold">
                                 계좌&금액 복사하기
@@ -178,6 +193,12 @@ const SimpleSettlementResultPage = () => {
                                         ? tipped_kakao_deposit_link
                                         : kakao_deposit_link
                                 }
+                                onClick={() => {
+                                    sendEventToAmplitude('click simple settlement kakao deposit link', {
+                                        meeting_id: meeting,
+                                        is_tipped: tipCheck,
+                                    });
+                                }}
                                 className="w-full flex items-center justify-center gap-2 bg-[#fee502] rounded-2xl pl-5 pr-8 py-4"
                             >
                                 <img
@@ -197,6 +218,12 @@ const SimpleSettlementResultPage = () => {
                                         ? tipped_toss_deposit_link
                                         : toss_deposit_link
                                 }
+                                onClick={() => {
+                                    sendEventToAmplitude('click simple settlement toss deposit link', {
+                                        meeting_id: meeting,
+                                        is_tipped: tipCheck,
+                                    });
+                                }}
                                 className="w-full flex items-center justify-center gap-2 bg-[#0050ff] rounded-2xl pl-5 pr-8 py-4"
                             >
                                 <img

@@ -12,6 +12,7 @@ import BillingMemberFix from '../Modal/BillingMemberFixModal';
 import Lottie from 'lottie-react';
 import animationData from '../../assets/animations/time.json';
 import ToastPopUp from '../common/ToastPopUp';
+import { sendEventToAmplitude } from '../../utils/amplitude';
 
 const truncate = (str, n) => {
     return str?.length > n ? str.substr(0, n - 1) + '...' : str;
@@ -272,6 +273,11 @@ const BillingMember = ({ member, setMember }) => {
             };
             const response = await postMemberData(meetingId, updatedFormData);
             if (response.status === 201) {
+                sendEventToAmplitude('add meeting member', {
+                    meeting_id: meetingId,
+                    member_name: formData.name,
+                    is_leader: leaderValue,
+                });
                 setFormData({ name: '' });
                 await handleGetData();
             }
