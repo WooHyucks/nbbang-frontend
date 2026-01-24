@@ -695,6 +695,23 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                                         ? '오늘 이미지 분석 횟수를 모두 사용했습니다' 
                                         : '이미지를 올리면 AI가 자동으로 분석해요'}
                                 </p>
+                                {/* AI 정산 설문 후킹 (횟수 다 썼을 때) */}
+                                {isLimitReached && (
+                                    <div className="mt-3 px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl">
+                                        <p className="text-xs text-gray-700 mb-2 text-center">
+                                            💬 AI 정산 서비스가 어떠셨나요?
+                                        </p>
+                                        <button
+                                            onClick={() => {
+                                                sendEventToAmplitude('click ai settlement survey from limit', {});
+                                                window.open('https://forms.gle/YOUR_SURVEY_LINK', '_blank');
+                                            }}
+                                            className="w-full px-4 py-2 bg-[#3182F6] text-white rounded-lg text-sm font-semibold hover:bg-[#1E6FFF] transition-colors active:scale-95"
+                                        >
+                                            설문 참여하기
+                                        </button>
+                                    </div>
+                                )}
                                 {/* 남은 횟수 표시 */}
                                 {user && !isLimitReached && (
                                     <div className={`mt-2 px-3 py-1.5 rounded-lg border text-xs ${
@@ -762,6 +779,23 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                                                 ? '오늘 이미지 분석 횟수를 모두 사용했습니다' 
                                                 : '이미지를 올리면 AI가 자동으로 분석해요'}
                                         </p>
+                                        {/* AI 정산 설문 후킹 (횟수 다 썼을 때) */}
+                                        {isLimitReached && (
+                                            <div className="mt-3 px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl">
+                                                <p className="text-xs text-gray-700 mb-2 text-center">
+                                                    💬 AI 정산 서비스가 어떠셨나요?
+                                                </p>
+                                                <button
+                                                    onClick={() => {
+                                                        sendEventToAmplitude('click ai settlement survey from limit', {});
+                                                        window.open('https://forms.gle/YOUR_SURVEY_LINK', '_blank');
+                                                    }}
+                                                    className="w-full px-4 py-2 bg-[#3182F6] text-white rounded-lg text-sm font-semibold hover:bg-[#1E6FFF] transition-colors active:scale-95"
+                                                >
+                                                    설문 참여하기
+                                                </button>
+                                            </div>
+                                        )}
                                         {/* 남은 횟수 표시 */}
                                         {user && !isLimitReached && (
                                             <div className={`mt-2 px-3 py-1.5 rounded-lg border text-xs inline-flex items-center gap-1.5 ${

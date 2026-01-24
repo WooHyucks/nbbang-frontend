@@ -47,12 +47,24 @@ const AiLoadingMessage = ({ isModifyMode = false }) => {
                     }}
                 />
             </div>
-            <div className="bg-gray-100 rounded-2xl px-4 py-3 max-w-[75%]">
-                <p
-                    className={`text-sm text-gray-900 transition-opacity duration-300 ${
-                        isFading ? 'opacity-0' : 'opacity-100'
-                    }`}
-                >
+            <div className="bg-gray-100 rounded-2xl px-4 py-3 max-w-[75%] relative min-h-[44px] flex items-center">
+                {/* 모든 메시지를 absolute로 겹쳐서 배치 */}
+                {loadingMessages.map((message, index) => (
+                    <p
+                        key={index}
+                        className={`absolute inset-0 flex items-center text-sm text-gray-900 transition-opacity duration-300 px-4 py-3 ${
+                            index === currentMessageIndex
+                                ? isFading
+                                    ? 'opacity-0'
+                                    : 'opacity-100'
+                                : 'opacity-0 pointer-events-none'
+                        }`}
+                    >
+                        {message}
+                    </p>
+                ))}
+                {/* 레이아웃 유지를 위한 투명 텍스트 */}
+                <p className="invisible text-sm px-4 py-3">
                     {loadingMessages[currentMessageIndex]}
                 </p>
             </div>

@@ -215,6 +215,24 @@ const SharePage = () => {
                             />
                         </div>
                     </div>
+                    
+                    {/* AI로 정산하러 가기 버튼 (공유 페이지 하단) */}
+                    <div className="flex items-start gap-2 sm:gap-3 justify-start mt-4">
+                        <div className="flex-shrink-0 mt-1">
+                            <Sparkles size={18} className="text-[#3182F6]" />
+                        </div>
+                        <div className="w-full max-w-[90%] sm:max-w-[85%] md:max-w-[75%]">
+                            <button
+                                onClick={() => {
+                                    navigate('/');
+                                }}
+                                className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 active:from-blue-600 active:to-purple-600 transition-all text-sm font-semibold active:scale-95 shadow-sm touch-manipulation min-h-[44px]"
+                            >
+                                <Sparkles size={18} />
+                                AI로 정산하러 가기
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
 
