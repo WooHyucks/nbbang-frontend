@@ -27,6 +27,7 @@ const SimpleSettlement = () => {
     const [calendarOpen, setCalendarOpen] = useState(false);
     const [openModal, setOpenModal] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleMeetingDate = (date) => {
         setPatchMeetingData({ ...patchMeetingData, date: date });
@@ -41,11 +42,14 @@ const SimpleSettlement = () => {
     };
 
     const handleSimpleSettlement = async () => {
+        setIsSubmitting(true);
         try {
             await PatchSimpleSettlementData(meetingId, patchMeetingData);
-            handleGetSimpleSettlement();
+            await handleGetSimpleSettlement();
         } catch (error) {
             console.log(error);
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -70,11 +74,10 @@ const SimpleSettlement = () => {
         }
     };
 
+    // 초기 로드만 수행 (모달 열고 닫을 때는 데이터 갱신하지 않음)
     useEffect(() => {
-        if (!kakaoModalOpen && !tossModalOpen) {
-            handleGetSimpleSettlement();
-        }
-    }, [kakaoModalOpen, tossModalOpen]);
+        handleGetSimpleSettlement();
+    }, []); // 빈 배열로 초기 마운트 시에만 실행
 
     if (isLoading) {
         return (
@@ -106,9 +109,12 @@ const SimpleSettlement = () => {
             <section className="px-6 mt-5">
                 <button
                     onClick={handleSimpleSettlement}
-                    className="w-full py-2 bg-main-blue text-lg font-bold text-white rounded-md"
+                    disabled={isSubmitting}
+                    className={`w-full py-2 bg-main-blue text-lg font-bold text-white rounded-md transition-opacity ${
+                        isSubmitting ? 'opacity-70 cursor-not-allowed' : ''
+                    }`}
                 >
-                    완료
+                    {isSubmitting ? '추가 중...' : '완료'}
                 </button>
             </section>
             <p className="mt-8 text-gray-400 font-bold text-sm">

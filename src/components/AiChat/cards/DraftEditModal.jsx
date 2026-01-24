@@ -1,9 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { X, Plus, Minus } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Plus, Minus, Calendar as CalendarIcon } from 'lucide-react';
 import { useParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 import { axiosData } from '../../../api/api';
 import ToastPopUp from '../../common/ToastPopUp';
+import useOnClickOutside from '../../../hooks/useOnClickOutside';
 
 // 참여자 추가 모달 컴포넌트
 const AddMemberModal = ({ isOpen, onClose, onAdd, existingMembers }) => {
@@ -56,7 +59,7 @@ const AddMemberModal = ({ isOpen, onClose, onAdd, existingMembers }) => {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center p-0 sm:p-4"
+                    className="fixed inset-0 z-[60] flex items-center justify-center p-4"
                     onClick={handleClose}
                 >
                     {/* Backdrop */}
@@ -69,20 +72,16 @@ const AddMemberModal = ({ isOpen, onClose, onAdd, existingMembers }) => {
 
                     {/* Modal */}
                     <motion.div
-                        initial={{ opacity: 0, y: '100%' }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: '100%' }}
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.95 }}
                         transition={{ type: 'spring', damping: 30, stiffness: 400 }}
                         onClick={(e) => e.stopPropagation()}
-                        className="relative bg-white rounded-t-[32px] sm:rounded-[32px] w-full max-w-md mx-auto shadow-2xl"
+                        className="relative bg-white rounded-[32px] w-full max-w-md mx-auto shadow-2xl"
                     >
-                        {/* 핸들 바 (모바일) */}
-                        <div className="sm:hidden pt-3 pb-2">
-                            <div className="w-12 h-1.5 bg-gray-300 rounded-full mx-auto" />
-                        </div>
 
                         {/* 헤더 */}
-                        <div className="px-4 sm:px-6 pt-4 sm:pt-6 pb-4 border-b border-gray-100">
+                        <div className="px-4 sm:px-6 pt-6 pb-4 border-b border-gray-100">
                             <div className="flex items-center justify-between">
                                 <h3 className="text-lg sm:text-xl font-semibold text-gray-900">
                                     참여자 추가
@@ -165,6 +164,23 @@ const DraftEditModal = ({ aiData, onClose, onSave, meetingId: propMeetingId }) =
         payer: '',
     });
     const [isAddMemberModalOpen, setIsAddMemberModalOpen] = useState(false);
+    const [showCalendar, setShowCalendar] = useState(false);
+    const calendarRef = useRef(null);
+
+    // 로컬 시간대를 사용하여 날짜를 YYYY-MM-DD 형식으로 포맷
+    const formatDateToLocal = (date) => {
+        if (!date) return '';
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    // 외부 클릭 시 캘린더 닫기
+    useOnClickOutside(calendarRef, () => {
+        setShowCalendar(false);
+    });
 
     useEffect(() => {
         if (aiData) {
@@ -477,21 +493,147 @@ const DraftEditModal = ({ aiData, onClose, onSave, meetingId: propMeetingId }) =
                     </div>
 
                     {/* 날짜 */}
-                    <div>
+                    <div className="relative" ref={calendarRef}>
                         <label className="block text-sm font-semibold text-gray-900 mb-2.5">
                             날짜
                         </label>
-                        <input
-                            type="date"
-                            value={formData.date}
-                            onChange={(e) =>
-                                setFormData((prev) => ({
-                                    ...prev,
-                                    date: e.target.value,
-                                }))
-                            }
-                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3182F6] focus:border-transparent text-base"
-                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowCalendar(!showCalendar)}
+                            className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#3182F6] focus:border-transparent text-base bg-white text-left flex items-center justify-between hover:border-gray-400 transition-colors"
+                        >
+                            <span className={formData.date ? 'text-gray-900' : 'text-gray-400'}>
+                                {formData.date && formData.date.trim()
+                                    ? (() => {
+                                          const dateObj = new Date(formData.date);
+                                          if (!isNaN(dateObj.getTime())) {
+                                              return dateObj.toLocaleDateString('ko-KR', {
+                                                  year: 'numeric',
+                                                  month: 'long',
+                                                  day: 'numeric',
+                                              });
+                                          }
+                                          return '날짜를 선택하세요';
+                                      })()
+                                    : '날짜를 선택하세요'}
+                            </span>
+                            <CalendarIcon size={20} className="text-gray-400" />
+                        </button>
+                        {showCalendar && (
+                            <div className="absolute top-full left-0 right-0 mt-2 z-[100] bg-white rounded-xl border-2 border-gray-200 shadow-xl p-4 calendar-container">
+                                <style>{`
+                                    .calendar-container .react-calendar {
+                                        width: 100%;
+                                        border: none;
+                                        font-family: inherit;
+                                        background: white;
+                                    }
+                                    .calendar-container .react-calendar__navigation {
+                                        display: flex;
+                                        height: 48px;
+                                        margin-bottom: 0;
+                                        background: #f8f9fa;
+                                        border-bottom: 1px solid #dee2e6;
+                                    }
+                                    .calendar-container .react-calendar__navigation button {
+                                        min-width: 44px;
+                                        background: none;
+                                        border: none;
+                                        color: #495057;
+                                        font-size: 16px;
+                                        font-weight: 600;
+                                        cursor: pointer;
+                                        transition: all 0.2s ease;
+                                    }
+                                    .calendar-container .react-calendar__navigation button:hover {
+                                        background: #e9ecef;
+                                        color: #3182f6;
+                                    }
+                                    .calendar-container .react-calendar__navigation__label {
+                                        flex-grow: 1;
+                                        font-weight: 700;
+                                        font-size: 16px;
+                                        color: #191f28;
+                                    }
+                                    .calendar-container .react-calendar__month-view__weekdays {
+                                        text-align: center;
+                                        text-transform: uppercase;
+                                        font-weight: 600;
+                                        font-size: 12px;
+                                        color: #6c757d;
+                                        background: #f8f9fa;
+                                        border-bottom: 1px solid #dee2e6;
+                                    }
+                                    .calendar-container .react-calendar__month-view__days__day {
+                                        padding: 12px 0;
+                                        font-size: 14px;
+                                        font-weight: 500;
+                                        color: #495057;
+                                        background: none;
+                                        border: none;
+                                        cursor: pointer;
+                                        transition: all 0.2s ease;
+                                        min-height: 40px;
+                                    }
+                                    .calendar-container .react-calendar__month-view__days__day:hover {
+                                        background: #e3f2fd;
+                                        color: #1976d2;
+                                    }
+                                    .calendar-container .react-calendar__tile--active {
+                                        background: #3182f6 !important;
+                                        color: white !important;
+                                        font-weight: 700;
+                                        border-radius: 8px;
+                                    }
+                                    .calendar-container .react-calendar__tile--now {
+                                        background: #fff3cd;
+                                        color: #856404;
+                                        font-weight: 600;
+                                    }
+                                `}</style>
+                                <Calendar
+                                    value={
+                                        formData.date && formData.date.trim()
+                                            ? (() => {
+                                                  const dateObj = new Date(formData.date);
+                                                  return !isNaN(dateObj.getTime())
+                                                      ? dateObj
+                                                      : new Date();
+                                              })()
+                                            : new Date()
+                                    }
+                                    onChange={(selectedDate) => {
+                                        const formattedDate = formatDateToLocal(selectedDate);
+                                        setFormData((prev) => ({
+                                            ...prev,
+                                            date: formattedDate,
+                                        }));
+                                        setShowCalendar(false);
+                                    }}
+                                    locale="ko-KR"
+                                    formatDay={(locale, date) => date.getDate()}
+                                    formatShortWeekday={(locale, date) => {
+                                        const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+                                        return weekdays[date.getDay()];
+                                    }}
+                                    showNeighboringMonth={false}
+                                    calendarType="gregory"
+                                    navigationLabel={({ date }) => {
+                                        return `${date.getFullYear()}년 ${date.getMonth() + 1}월`;
+                                    }}
+                                    className="w-full border-none"
+                                    tileClassName={({ date: tileDate, view }) => {
+                                        if (view === 'month') {
+                                            const tileDateStr = formatDateToLocal(tileDate);
+                                            if (tileDateStr === formData.date) {
+                                                return 'bg-blue-500 text-white rounded-lg font-bold';
+                                            }
+                                        }
+                                        return '';
+                                    }}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     {/* 멤버 */}

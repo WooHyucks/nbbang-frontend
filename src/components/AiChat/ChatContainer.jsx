@@ -695,6 +695,35 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                                         ? '오늘 이미지 분석 횟수를 모두 사용했습니다' 
                                         : '이미지를 올리면 AI가 자동으로 분석해요'}
                                 </p>
+                                {/* 남은 횟수 표시 */}
+                                {user && !isLimitReached && (
+                                    <div className={`mt-2 px-3 py-1.5 rounded-lg border text-xs ${
+                                        remainingCount <= 3
+                                            ? 'bg-orange-50 border-orange-200'
+                                            : 'bg-blue-50 border-blue-200'
+                                    }`}>
+                                        <div className="flex items-center justify-center gap-1.5">
+                                            <div className={`w-1.5 h-1.5 rounded-full ${
+                                                remainingCount <= 3 ? 'bg-orange-500' : 'bg-blue-500'
+                                            }`} />
+                                            <span className={`font-medium ${
+                                                remainingCount <= 3 ? 'text-orange-700' : 'text-blue-700'
+                                            }`}>
+                                                오늘 남은 이미지 분석 횟수
+                                            </span>
+                                            <span className={`font-bold ${
+                                                remainingCount <= 3 ? 'text-orange-600' : 'text-blue-600'
+                                            }`}>
+                                                {remainingCount}
+                                            </span>
+                                            <span className={`font-medium ${
+                                                remainingCount <= 3 ? 'text-orange-500' : 'text-blue-500'
+                                            }`}>
+                                                / {maxDailyLimit}회
+                                            </span>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                             
                             {/* 데스크탑: 올리기만 */}
@@ -733,6 +762,33 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                                                 ? '오늘 이미지 분석 횟수를 모두 사용했습니다' 
                                                 : '이미지를 올리면 AI가 자동으로 분석해요'}
                                         </p>
+                                        {/* 남은 횟수 표시 */}
+                                        {user && !isLimitReached && (
+                                            <div className={`mt-2 px-3 py-1.5 rounded-lg border text-xs inline-flex items-center gap-1.5 ${
+                                                remainingCount <= 3
+                                                    ? 'bg-orange-50 border-orange-200'
+                                                    : 'bg-blue-50 border-blue-200'
+                                            }`}>
+                                                <div className={`w-1.5 h-1.5 rounded-full ${
+                                                    remainingCount <= 3 ? 'bg-orange-500' : 'bg-blue-500'
+                                                }`} />
+                                                <span className={`font-medium ${
+                                                    remainingCount <= 3 ? 'text-orange-700' : 'text-blue-700'
+                                                }`}>
+                                                    오늘 남은 이미지 분석 횟수
+                                                </span>
+                                                <span className={`font-bold ${
+                                                    remainingCount <= 3 ? 'text-orange-600' : 'text-blue-600'
+                                                }`}>
+                                                    {remainingCount}
+                                                </span>
+                                                <span className={`font-medium ${
+                                                    remainingCount <= 3 ? 'text-orange-500' : 'text-blue-500'
+                                                }`}>
+                                                    / {maxDailyLimit}회
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                     <Receipt
                                         size={20}

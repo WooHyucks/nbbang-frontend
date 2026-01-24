@@ -7,7 +7,7 @@ import { PutMeetingNameData } from '../../api/api';
 import ToastPopUp from '../common/ToastPopUp';
 
 const BillingNameModalContainer = styled.div`
-    z-index: 9999;
+    z-index: 99999;
     position: absolute;
     width: 100%;
 `;
@@ -20,7 +20,7 @@ const WrapperModal = styled.div`
     justify-content: center;
     align-items: center;
     padding: 0 20px;
-    z-index: 9999;
+    z-index: 99999;
 `;
 
 const Modal = styled.div`

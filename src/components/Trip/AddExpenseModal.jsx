@@ -1,5 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { X, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { X, Loader2, Calendar as CalendarIcon } from 'lucide-react';
+import Calendar from 'react-calendar';
+import 'react-calendar/dist/Calendar.css';
 import {
     createPayment,
     updatePayment,
@@ -8,6 +10,7 @@ import {
 import { formatCurrency } from '../../utils/currencyFormatter';
 import { CURRENCY_MAP } from '../../types/trip.js';
 import { sendEventToAmplitude } from '../../utils/amplitude';
+import useOnClickOutside from '../../hooks/useOnClickOutside';
 
 const AddExpenseModal = ({
     isOpen,
@@ -28,12 +31,29 @@ const AddExpenseModal = ({
     const [selectedMemberIds, setSelectedMemberIds] = useState([]);
     const [selectedCurrency, setSelectedCurrency] = useState(countryCurrency);
     const [date, setDate] = useState('');
+    const [showCalendar, setShowCalendar] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [isLoadingExchangeRate, setIsLoadingExchangeRate] = useState(false);
     const [error, setError] = useState('');
+    const calendarRef = useRef(null);
+    
+    // 외부 클릭 시 캘린더 닫기
+    useOnClickOutside(calendarRef, () => {
+        setShowCalendar(false);
+    });
 
     const isKRW = selectedCurrency === 'KRW';
     const isAdvancePayment = paymentType === 'INDIVIDUAL' && isKRW;
+
+    // 로컬 시간대를 사용하여 날짜를 YYYY-MM-DD 형식으로 포맷
+    const formatDateToLocal = (date) => {
+        if (!date) return '';
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
 
     useEffect(() => {
         if (isOpen && members.length > 0) {
@@ -53,8 +73,8 @@ const AddExpenseModal = ({
                 return;
             }
 
-            // 날짜 초기화 (YYYY-MM-DD 형식)
-            const today = new Date().toISOString().split('T')[0];
+            // 날짜 초기화 (YYYY-MM-DD 형식) - 로컬 시간대 사용
+            const today = formatDateToLocal(new Date());
 
             // 수정 모드: initialPayment가 있으면 기존 데이터로 초기화
             if (initialPayment) {
@@ -90,7 +110,7 @@ const AddExpenseModal = ({
                 // 날짜: created_at이 있으면 사용, 없으면 오늘
                 if (initialPayment.created_at) {
                     const paymentDate = new Date(initialPayment.created_at);
-                    setDate(paymentDate.toISOString().split('T')[0]);
+                    setDate(formatDateToLocal(paymentDate));
                 } else {
                     setDate(today);
                 }
@@ -235,7 +255,7 @@ const AddExpenseModal = ({
                 pay_member_id: paymentType === 'PUBLIC' ? 0 : payerId,
                 attend_member_ids: selectedMemberIds,
                 exchange_rate: exchangeRate,
-                date: date || new Date().toISOString().split('T')[0], // 날짜 전송
+                date: date || formatDateToLocal(new Date()), // 날짜 전송
             };
 
             // 수정 모드면 updatePayment, 추가 모드면 createPayment
@@ -285,7 +305,8 @@ const AddExpenseModal = ({
         setCustomExchangeRate(baseExchangeRate?.toString() || '');
         setSelectedMemberIds([]);
         setSelectedCurrency(countryCurrency);
-        setDate(new Date().toISOString().split('T')[0]);
+        setDate(formatDateToLocal(new Date()));
+        setShowCalendar(false);
         setError('');
         setIsLoadingExchangeRate(false);
         onClose();
@@ -346,17 +367,129 @@ const AddExpenseModal = ({
                     )}
 
                     {/* 날짜 선택 필드 */}
-                    <div>
+                    <div className="relative" ref={calendarRef}>
                         <label className="block text-sm font-semibold text-gray-900 mb-2">
                             결제 날짜
                         </label>
-                        <input
-                            type="date"
-                            value={date}
-                            onChange={(e) => setDate(e.target.value)}
-                            className="w-full min-w-0 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500"
-                            required
-                        />
+                        <button
+                            type="button"
+                            onClick={() => setShowCalendar(!showCalendar)}
+                            className="w-full min-w-0 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 bg-white text-left flex items-center justify-between hover:border-gray-300 transition-colors"
+                        >
+                            <span className={date ? 'text-gray-900' : 'text-gray-400'}>
+                                {date
+                                    ? new Date(date).toLocaleDateString('ko-KR', {
+                                          year: 'numeric',
+                                          month: 'long',
+                                          day: 'numeric',
+                                      })
+                                    : '날짜를 선택하세요'}
+                            </span>
+                            <CalendarIcon size={20} className="text-gray-400" />
+                        </button>
+                        {showCalendar && (
+                            <div className="absolute top-full left-0 right-0 mt-2 z-[100] bg-white rounded-xl border-2 border-gray-200 shadow-xl p-4 calendar-container">
+                                <style>{`
+                                    .calendar-container .react-calendar {
+                                        width: 100%;
+                                        border: none;
+                                        font-family: inherit;
+                                        background: white;
+                                    }
+                                    .calendar-container .react-calendar__navigation {
+                                        display: flex;
+                                        height: 48px;
+                                        margin-bottom: 0;
+                                        background: #f8f9fa;
+                                        border-bottom: 1px solid #dee2e6;
+                                    }
+                                    .calendar-container .react-calendar__navigation button {
+                                        min-width: 44px;
+                                        background: none;
+                                        border: none;
+                                        color: #495057;
+                                        font-size: 16px;
+                                        font-weight: 600;
+                                        cursor: pointer;
+                                        transition: all 0.2s ease;
+                                    }
+                                    .calendar-container .react-calendar__navigation button:hover {
+                                        background: #e9ecef;
+                                        color: #3182f6;
+                                    }
+                                    .calendar-container .react-calendar__navigation__label {
+                                        flex-grow: 1;
+                                        font-weight: 700;
+                                        font-size: 16px;
+                                        color: #191f28;
+                                    }
+                                    .calendar-container .react-calendar__month-view__weekdays {
+                                        text-align: center;
+                                        text-transform: uppercase;
+                                        font-weight: 600;
+                                        font-size: 12px;
+                                        color: #6c757d;
+                                        background: #f8f9fa;
+                                        border-bottom: 1px solid #dee2e6;
+                                    }
+                                    .calendar-container .react-calendar__month-view__days__day {
+                                        padding: 12px 0;
+                                        font-size: 14px;
+                                        font-weight: 500;
+                                        color: #495057;
+                                        background: none;
+                                        border: none;
+                                        cursor: pointer;
+                                        transition: all 0.2s ease;
+                                        min-height: 40px;
+                                    }
+                                    .calendar-container .react-calendar__month-view__days__day:hover {
+                                        background: #e3f2fd;
+                                        color: #1976d2;
+                                    }
+                                    .calendar-container .react-calendar__tile--active {
+                                        background: #3182f6 !important;
+                                        color: white !important;
+                                        font-weight: 700;
+                                        border-radius: 8px;
+                                    }
+                                    .calendar-container .react-calendar__tile--now {
+                                        background: #fff3cd;
+                                        color: #856404;
+                                        font-weight: 600;
+                                    }
+                                `}</style>
+                                <Calendar
+                                    value={date ? new Date(date) : new Date()}
+                                    onChange={(selectedDate) => {
+                                        const formattedDate = formatDateToLocal(selectedDate);
+                                        setDate(formattedDate);
+                                        setShowCalendar(false);
+                                    }}
+                                    locale="ko-KR"
+                                    formatDay={(locale, date) => date.getDate()}
+                                    formatShortWeekday={(locale, date) => {
+                                        const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+                                        return weekdays[date.getDay()];
+                                    }}
+                                    showNeighboringMonth={false}
+                                    calendarType="gregory"
+                                    navigationLabel={({ date }) => {
+                                        return `${date.getFullYear()}년 ${date.getMonth() + 1}월`;
+                                    }}
+                                    className="w-full border-none"
+                                    tileClassName={({ date: tileDate, view }) => {
+                                        if (view === 'month') {
+                                            const tileDateStr = formatDateToLocal(tileDate);
+                                            if (tileDateStr === date) {
+                                                return 'bg-blue-500 text-white rounded-lg font-bold';
+                                            }
+                                        }
+                                        return '';
+                                    }}
+                                />
+                            </div>
+                        )}
                     </div>
 
                     <div>

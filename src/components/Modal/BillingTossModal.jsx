@@ -171,7 +171,7 @@ const BillingTossModal = ({
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-center justify-center p-4"
+                className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
             >
                 {/* Backdrop */}
                 <motion.div
@@ -187,9 +187,13 @@ const BillingTossModal = ({
                     initial={{ opacity: 0, y: '100%' }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: '100%' }}
-                    transition={{ type: 'spring', damping: 30, stiffness: 400 }}
+                    transition={{
+                        type: 'spring',
+                        damping: 30,
+                        stiffness: 400,
+                    }}
                     onClick={(e) => e.stopPropagation()}
-                    className="relative bg-white rounded-[28px] w-full max-w-lg mx-auto max-h-[92vh] flex flex-col overflow-hidden shadow-2xl"
+                    className="relative bg-white rounded-t-[32px] sm:rounded-[32px] w-full max-w-lg mx-auto max-h-[92vh] flex flex-col overflow-hidden"
                 >
                     {/* 핸들 바 */}
                     <div className="pt-3 pb-4 px-6 border-b border-black/[0.06] rounded-t-[32px] flex-shrink-0">
