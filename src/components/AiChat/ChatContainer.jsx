@@ -571,7 +571,7 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
     return (
         <div className="flex flex-col h-full bg-white">
             {/* 메시지 리스트 영역 (Gemini 스타일: 중앙 정렬) */}
-            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto w-full relative pb-[200px] md:pb-0">
+            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto w-full relative pt-[60px] md:pt-0 pb-[200px] md:pb-0">
                 {/* 로딩 오버레이 (흰 배경 + 상단 게이지바) - meetingId가 있고 로딩 중일 때 표시 */}
                 {isLoading && meetingId && (
                     <>

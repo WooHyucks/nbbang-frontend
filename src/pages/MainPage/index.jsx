@@ -104,8 +104,8 @@ const MainPage = () => {
 
             {/* 메인 컨텐츠 영역 */}
             <div className="flex-1 flex flex-col min-w-0">
-                {/* 헤더 */}
-                <header className="sticky top-0 z-20 bg-white border-b border-[#E5E8EB]">
+                {/* 헤더 - 모바일에서는 fixed로 상단 고정 */}
+                <header className="md:sticky fixed md:relative top-0 left-0 right-0 z-30 md:z-20 bg-white border-b border-[#E5E8EB]">
                     <div className="flex items-center justify-between px-4 md:px-6 lg:px-8 py-3">
                         {/* 햄버거 메뉴 (모바일만) */}
                         <button
