@@ -574,14 +574,14 @@ const DraftCard = ({
                                                                             <div className="flex items-center gap-1.5 mt-1">
                                                                                 <span className="text-xs">🔥</span>
                                                                                 <p className="text-xs text-red-600 font-medium">
-                                                                                    {member.name}님에게 보내주세요
+                                                                                    총무님이 {member.name}님에게 보내주세요
                                                                                 </p>
                                                                             </div>
                                                                         )}
                                                                     </>
                                                                 )}
-                                                                {/* 계좌 복사 버튼 (유저 이름 밑에 배치) */}
-                                                                {!isMe && depositCopyText && (
+                                                                {/* 계좌 복사 버튼 (유저 이름 밑에 배치, 받는 사람은 제외) */}
+                                                                {!isMe && !isReceiving && depositCopyText && (
                                                                     <button
                                                                         onClick={async () => {
                                                                             try {
@@ -707,33 +707,6 @@ const DraftCard = ({
                                                                                 <img src="/images/kakao 2.png" alt="kakao" className="w-4 h-4" />
                                                                                 카카오 송금
                                                                             </a>
-                                                                        )}
-                                                                        {!hasToss && !hasKakao && (
-                                                                            <button
-                                                                                onClick={async () => {
-                                                                                    const message = `${member.name}님, 계좌번호 좀 알려주세요!`;
-                                                                                    try {
-                                                                                        await navigator.clipboard.writeText(message);
-                                                                                        setToastMessage('계좌 요청 메시지가 복사되었습니다!');
-                                                                                        setToastType('success');
-                                                                                        setToastPopUp(true);
-                                                                                    } catch (error) {
-                                                                                        console.error('복사 실패:', error);
-                                                                                        const textArea = document.createElement('textarea');
-                                                                                        textArea.value = message;
-                                                                                        document.body.appendChild(textArea);
-                                                                                        textArea.select();
-                                                                                        document.execCommand('copy');
-                                                                                        document.body.removeChild(textArea);
-                                                                                        setToastMessage('계좌 요청 메시지가 복사되었습니다!');
-                                                                                        setToastType('success');
-                                                                                        setToastPopUp(true);
-                                                                                    }
-                                                                                }}
-                                                                                className="flex-1 px-4 py-2.5 text-sm font-medium bg-red-100 text-red-700 rounded-xl md:hover:bg-red-200 active:scale-95 active:bg-red-200 transition-all touch-manipulation min-h-[44px]"
-                                                                            >
-                                                                                계좌번호 물어보기
-                                                                            </button>
                                                                         )}
                                                                     </>
                                                                 )}

@@ -13,7 +13,7 @@ import UserProtocolPage from './pages/UserProtocolPage';
 import SignIn from './components/Auth/SignIn';
 import SimpleSettlementPage from './pages/simpleSettlementPage';
 import SignUp from './components/Auth/SignUp';
-import AppBar from './components/common/AppBar';
+// import AppBar from './components/common/AppBar';
 import ServerErrorPage from './pages/ServerErrorPage';
 import {
     KakaoRedirect,
@@ -159,11 +159,25 @@ function App() {
 
 function ShareRouter() {
     const [searchParams] = useSearchParams();
-    const meeting = searchParams.get('meeting');
-    const simpleMeeting = searchParams.get('simple-meeting');
-    const ai = searchParams.get('ai');
 
-    // AI 정산 공유 링크 우선 처리
+    // 1. 훅을 통한 1차 파싱
+    let meeting = searchParams.get('meeting');
+    let simpleMeeting = searchParams.get('simple-meeting');
+    let ai = searchParams.get('ai');
+
+    // 2. 훅 실패 시 window 객체 직접 접근 (갤럭시 웹뷰 호환성 보완)
+    if (!meeting && !simpleMeeting && !ai) {
+        try {
+            const rawParams = new URLSearchParams(window.location.search);
+            meeting = rawParams.get('meeting');
+            simpleMeeting = rawParams.get('simple-meeting');
+            ai = rawParams.get('ai');
+        } catch (e) {
+            console.error('Manual URL parsing failed:', e);
+        }
+    }
+
+    // 3. 라우팅 로직 (우선순위: ai > meeting > simple-meeting)
     if (ai) {
         return <SharePage />;
     } else if (meeting) {
@@ -171,7 +185,32 @@ function ShareRouter() {
     } else if (simpleMeeting) {
         return <SimpleSettlementResultPage simpleMeetingId={simpleMeeting} />;
     } else {
-        return <div>Invalid parameters</div>;
+        // 4. 디버깅용 UI (배포 후 원인 파악용)
+        return (
+            <div className="flex flex-col items-center justify-center min-h-screen p-6 text-center bg-gray-50">
+                <div className="bg-white p-6 rounded-lg shadow-md max-w-sm w-full">
+                    <h2 className="text-lg font-bold text-red-500 mb-2">
+                        잘못된 접근입니다
+                    </h2>
+                    <p className="text-sm text-gray-600 mb-4">
+                        공유 링크 정보를 불러올 수 없습니다.
+                    </p>
+                    
+                    <div className="bg-gray-100 p-3 rounded text-xs text-left break-all text-gray-500 mb-4 font-mono">
+                        <p><strong>Debug Info:</strong></p>
+                        <p className="mt-1">URL: {window.location.href}</p>
+                        <p className="mt-1">Query: {window.location.search || '(없음)'}</p>
+                    </div>
+
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="w-full py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded-md transition-colors"
+                    >
+                        새로고침
+                    </button>
+                </div>
+            </div>
+        );
     }
 }
 
