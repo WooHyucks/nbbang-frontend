@@ -87,6 +87,7 @@ const SimpleSettlementResultPage = () => {
     };
 
     return (
+        <div className="flex flex-col h-full bg-white max-w-[450px] mx-auto text-center">
         <div className="relative flex flex-col items-center h-screen">
             <img
                 onClick={() => navigate('/')}
@@ -217,6 +218,7 @@ const SimpleSettlementResultPage = () => {
                     />
                 )}
             </div>
+        </div>
         </div>
     );
 };

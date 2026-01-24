@@ -7,9 +7,7 @@ body {
     font-family: 'Noto Sans', sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    max-width: 450px;
-    text-align: center;
-    margin: 0 auto;
+
 }
 
 code {
@@ -39,6 +37,13 @@ code {
         }
     }
     .scroll-hidden::-webkit-scrollbar {
+        display: none;
+    }
+    .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+    }
+    .scrollbar-hide::-webkit-scrollbar {
         display: none;
     }
 }

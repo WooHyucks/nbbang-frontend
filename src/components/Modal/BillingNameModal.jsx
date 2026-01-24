@@ -7,7 +7,7 @@ import { PutMeetingNameData } from '../../api/api';
 import ToastPopUp from '../common/ToastPopUp';
 
 const BillingNameModalContainer = styled.div`
-    z-index: 10;
+    z-index: 9999;
     position: absolute;
     width: 100%;
 `;
@@ -20,6 +20,7 @@ const WrapperModal = styled.div`
     justify-content: center;
     align-items: center;
     padding: 0 20px;
+    z-index: 9999;
 `;
 
 const Modal = styled.div`
@@ -328,7 +329,7 @@ const BillingName = ({ setOpenMenuModal, MainMeetingId, MainMeetingName }) => {
 
     const [toastPopUp, setToastPopUp] = useState(false);
     const [formData, setFormData] = useState({
-        name: MainMeetingName,
+        name: MainMeetingName || '',
         date: getInitialDate(),
     });
 
@@ -374,13 +375,13 @@ const BillingName = ({ setOpenMenuModal, MainMeetingId, MainMeetingName }) => {
                 }
             }
         } catch (error) {
-            alert('모임명 수정에 실패했습니다');
             console.log('Api 데이터 수정 실패', error);
+            // 에러는 이미 toastPopUp으로 처리됨
         }
     };
 
     useEffect(() => {
-        setNotAllow(formData.name.length === 0);
+        setNotAllow(!formData.name || formData.name.length === 0);
     }, [formData.name]);
 
     return (

@@ -21,7 +21,7 @@ const ResultContainar = styled.div.withConfig({
     height: 100%;
     position: relative;
     max-width: 680px;
-    margin: 24px auto;
+
 `;
 const BillingContainer = styled.div`
     width: 100%;
@@ -126,7 +126,9 @@ const BillingSkeletonCard = styled.div`
     border-bottom: 1px solid #e8f0fe;
 `;
 
-const SkeletonText = styled(SkeletonBox)`
+const SkeletonText = styled(SkeletonBox).withConfig({
+    shouldForwardProp: (prop) => prop !== 'height' && prop !== 'width' && prop !== 'marginBottom',
+})`
     height: ${(props) => props.height || '16px'};
     width: ${(props) => props.width || '60%'};
     margin-bottom: ${(props) => props.marginBottom || '8px'};
@@ -172,8 +174,7 @@ const Billing = ({ payment, meetingName, setMeetingName }) => {
                 const kakao = window.Kakao;
                 if (!kakao.isInitialized()) {
                     const kakaoSdkKey =
-                        import.meta.env.VITE_KAKAO_SDK_KEY ||
-                        '904f6d1fcb87f1741d5c8cfad188ffc2';
+                        import.meta.env.VITE_KAKAO_SDK_KEY;
                     kakao.init(kakaoSdkKey);
                 }
             }

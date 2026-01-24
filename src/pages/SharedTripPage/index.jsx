@@ -6,6 +6,7 @@ import { POPULAR_COUNTRIES } from '../../constants/countries';
 import { RefreshCw, Loader2 } from 'lucide-react';
 import ToastPopUp from '@/components/common/ToastPopUp';
 import { Skeleton } from '@/components/ui/skeleton';
+import { sendEventToAmplitude } from '@/utils/amplitude';
 
 const SharedTripPage = () => {
     const [searchParams] = useSearchParams();

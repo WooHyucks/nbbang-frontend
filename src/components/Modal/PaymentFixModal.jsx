@@ -342,11 +342,13 @@ const PaymentFix = ({
         e.preventDefault();
         try {
             // 서버로 보낼 때 스네이크 케이스로 변환
+            // 일반 정산은 개인 결제이므로 type을 INDIVIDUAL로 명시적으로 전송
             const dataToSend = {
                 place: formData.place,
                 price: formData.price,
                 attend_member_ids: formData.attend_member_ids,
                 pay_member_id: formData.pay_member_id,
+                type: 'INDIVIDUAL', // 일반 정산은 개인 결제 타입
             };
             const response = await putPaymentData(meetingId, id, dataToSend);
             if (response.status === 200) {

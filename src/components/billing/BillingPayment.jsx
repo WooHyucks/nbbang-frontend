@@ -65,6 +65,10 @@ const BillingAddPayment = styled.button`
     background-color: #0066ff;
     color: white;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 
     &:hover {
         background-color: #1b64da;
@@ -426,8 +430,10 @@ const BillingPayment = ({ member, payment, setPayment, setIsLoading }) => {
     const [openModal, setOpenModal] = useState(false);
     const [paymentSelected, setPayMentSelected] = useState({});
     const [toastPopUp, setToastPopUp] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
     const [memberSelection, setMemberSelection] = useState({});
     const [isPaymentLoading, setIsPaymentLoading] = useState(true);
+    const [isAddingPayment, setIsAddingPayment] = useState(false);
 
     const firstPayMemberId = useMemo(() => {
         return selectedMember ? Number(selectedMember) : null;
@@ -455,14 +461,19 @@ const BillingPayment = ({ member, payment, setPayment, setIsLoading }) => {
 
     // 폼데이터와 체크박스 연동
     useEffect(() => {
+        // selectedMember가 변경되면 pay_member_id도 업데이트
+        const payMemberId = selectedMember && selectedMember !== '' && Number(selectedMember) > 0
+            ? Number(selectedMember)
+            : firstPayMemberId;
+            
         setFormData((prev) => ({
             ...prev,
             attend_member_ids: Object.keys(memberSelection).filter(
                 (key) => memberSelection[key],
             ),
-            pay_member_id: firstPayMemberId,
+            pay_member_id: payMemberId,
         }));
-    }, [firstPayMemberId, memberSelection]);
+    }, [selectedMember, firstPayMemberId, memberSelection]);
 
     // 서버에서 결제 데이터 가져오기
     const handleGetData = async () => {
@@ -497,25 +508,59 @@ const BillingPayment = ({ member, payment, setPayment, setIsLoading }) => {
     // 결제 내역 추가
     const handleAddMember = async (e) => {
         e.preventDefault();
+        setIsAddingPayment(true);
         try {
-            // 결제자 ID가 없으면 selectedMember 또는 첫 번째 멤버 ID 사용
-            const pay_member_id =
-                formData.pay_member_id ||
-                firstPayMemberId ||
-                (member.length > 0 ? member[0].id : null);
+            // 결제자 ID 결정: selectedMember를 우선적으로 사용
+            let pay_member_id = null;
+            
+            // 디버깅: 현재 상태 확인
+            console.log('🔍 결제자 선택 상태:', {
+                selectedMember,
+                formData_pay_member_id: formData.pay_member_id,
+                firstPayMemberId,
+                member: member.map(m => ({ id: m.id, name: m.name }))
+            });
+            
+            // 1순위: selectedMember가 있고 유효한 값이면 사용
+            if (selectedMember && selectedMember !== '' && selectedMember !== '0' && Number(selectedMember) > 0) {
+                pay_member_id = Number(selectedMember);
+                console.log('✅ selectedMember 사용:', pay_member_id);
+            }
+            // 2순위: formData.pay_member_id가 있고 유효한 값이면 사용
+            else if (formData.pay_member_id && formData.pay_member_id > 0) {
+                pay_member_id = formData.pay_member_id;
+                console.log('✅ formData.pay_member_id 사용:', pay_member_id);
+            }
+            // 3순위: firstPayMemberId가 있고 유효한 값이면 사용
+            else if (firstPayMemberId && firstPayMemberId > 0) {
+                pay_member_id = firstPayMemberId;
+                console.log('✅ firstPayMemberId 사용:', pay_member_id);
+            }
+            // 4순위: 첫 번째 멤버 ID 사용
+            else if (member.length > 0) {
+                pay_member_id = member[0].id;
+                console.log('✅ 첫 번째 멤버 ID 사용:', pay_member_id);
+            }
 
-            if (!pay_member_id) {
-                alert('결제자를 선택해주세요.');
+            if (!pay_member_id || pay_member_id === 0) {
+                console.error('❌ 결제자 ID가 없습니다:', { pay_member_id, selectedMember, formData, firstPayMemberId });
+                setToastMessage('결제자를 선택해주세요.');
+                setToastPopUp(true);
+                setIsAddingPayment(false);
                 return;
             }
 
             // 서버로 보낼 때 스네이크 케이스로 변환
+            // 일반 정산은 개인 결제이므로 type을 INDIVIDUAL로 명시적으로 전송
             const dataToSend = {
                 place: formData.place,
                 price: formData.price,
                 attend_member_ids: formData.attend_member_ids,
                 pay_member_id: pay_member_id,
+                type: 'INDIVIDUAL', // 일반 정산은 개인 결제 타입
             };
+            
+            console.log('📤 전송할 데이터:', dataToSend);
             const responsePostData = await postPaymentData(
                 meetingId,
                 dataToSend,
@@ -531,10 +576,15 @@ const BillingPayment = ({ member, payment, setPayment, setIsLoading }) => {
                 });
                 handleGetData();
             } else {
+                setToastMessage('결제 내역 추가에 실패했습니다.');
                 setToastPopUp(true);
             }
         } catch (error) {
             console.log('Api 데이터 수정 실패');
+            setToastMessage('결제 내역 추가에 실패했습니다.');
+            setToastPopUp(true);
+        } finally {
+            setIsAddingPayment(false);
         }
     };
 
@@ -574,10 +624,12 @@ const BillingPayment = ({ member, payment, setPayment, setIsLoading }) => {
 
     // 멤버가 초기 로드되면 selectBox에서 첫 번째 멤버를 기본값으로
     useEffect(() => {
-        if (member.length > 0 && !selectedMember) {
-            handleMemberSelect({ target: { value: String(member[0].id) } });
+        if (member.length > 0 && (!selectedMember || selectedMember === '' || selectedMember === '0')) {
+            const firstMemberId = String(member[0].id);
+            setSelectedMember(firstMemberId);
+            console.log('🔄 selectedMember 초기화:', firstMemberId);
         }
-    }, [member]);
+    }, [member, selectedMember]);
 
     // 수정 모달 열기
     const handleClick = (selectedMember) => {
@@ -728,8 +780,8 @@ const BillingPayment = ({ member, payment, setPayment, setIsLoading }) => {
                             </div>
                         ))}
                     </StyledCheckboxDiv>
-                    <BillingAddPayment type="submit" disabled={notAllow}>
-                        결제내역 추가하기
+                    <BillingAddPayment type="submit" disabled={notAllow || isAddingPayment}>
+                        {isAddingPayment ? '추가 중...' : '결제내역 추가하기'}
                     </BillingAddPayment>
                 </FormContainer>
             </BillingPaymentContainer>
@@ -960,8 +1012,9 @@ const BillingPayment = ({ member, payment, setPayment, setIsLoading }) => {
             {/* ============ Toast 팝업 ============ */}
             {toastPopUp && (
                 <ToastPopUp
-                    message="입력 최대 값이 초과하였습니다."
+                    message={toastMessage || "입력 최대 값이 초과하였습니다."}
                     setToastPopUp={setToastPopUp}
+                    type="error"
                 />
             )}
         </>

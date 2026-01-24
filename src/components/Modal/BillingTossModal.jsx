@@ -29,21 +29,38 @@ const banks = [
     '토스뱅크',
 ];
 
-const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
-    const { meetingId } = useParams();
+const BillingTossModal = ({
+    setTossModalOpen,
+    meetingName,
+    user,
+}) => {
+
+    const { meetingId: urlMeetingId } = useParams();
+    const meetingId = urlMeetingId || meetingName?.id; // URL에서 가져오거나 meetingName에서 가져오기
     const [accountNumber, setAccountNumber] = useState(
         meetingName?.toss_deposit_information?.account_number ||
             meetingName?.tossDepositInformation?.accountNumber ||
+            user?.tossDepositInformation?.accountNumber ||
             '',
     );
     const [selectedBank, setSelectedBank] = useState(
         meetingName?.toss_deposit_information?.bank ||
             meetingName?.tossDepositInformation?.bank ||
+            user?.tossDepositInformation?.bank ||
             banks[0],
     );
     const [actionType, setActionType] = useState(null);
     const [isSaving, setIsSaving] = useState(false);
     const [toastPopUp, setToastPopUp] = useState(false);
+    const [toastMessage, setToastMessage] = useState('');
+    const [toastType, setToastType] = useState('success');
+
+    // 미팅 ID가 없으면 자동으로 "계속해서 사용하기" 모드로 설정
+    useEffect(() => {
+        if (!meetingId) {
+            setActionType('계속해서 사용하기');
+        }
+    }, [meetingId]);
 
     useEffect(() => {
         document.body.style.overflow = 'hidden';
@@ -54,7 +71,9 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
 
     const handleSave = async (action) => {
         if (!accountNumber.trim() || !selectedBank) {
-            alert('은행과 계좌번호를 모두 입력해주세요.');
+            setToastMessage('은행과 계좌번호를 모두 입력해주세요.');
+            setToastType('warning');
+            setToastPopUp(true);
             return;
         }
 
@@ -65,7 +84,7 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
                 bank: selectedBank,
             };
 
-            if (action === '이번에만 사용하기') {
+            if (action === '이번에만 사용하기' && meetingId) {
                 const responsePostData = await PatchBillingMeetingTossDeposit(
                     meetingId,
                     formData,
@@ -75,19 +94,34 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
                         action: '이번에만 사용하기',
                     });
                     setTossModalOpen(false);
+                    setToastMessage('토스 계좌가 설정되었습니다.');
+                    setToastType('success');
                     setToastPopUp(true);
                 }
             } else if (action === '계속해서 사용하기') {
                 await PatchBillingUserTossDeposit(formData);
-                const responsePostData = await PatchBillingMeetingTossDeposit(
-                    meetingId,
-                    formData,
-                );
-                if (responsePostData && responsePostData.status === 200) {
+                if (meetingId) {
+                    const responsePostData = await PatchBillingMeetingTossDeposit(
+                        meetingId,
+                        formData,
+                    );
+                    if (responsePostData && responsePostData.status === 200) {
+                        sendEventToAmplitude('complete toss deposit id register', {
+                            action: '계속해서 사용하기',
+                        });
+                        setTossModalOpen(false);
+                        setToastMessage('토스 계좌가 설정되었습니다.');
+                        setToastType('success');
+                        setToastPopUp(true);
+                    }
+                } else {
+                    // meetingId가 없으면 사용자 정보만 업데이트
                     sendEventToAmplitude('complete toss deposit id register', {
                         action: '계속해서 사용하기',
                     });
                     setTossModalOpen(false);
+                    setToastMessage('토스 계좌가 설정되었습니다.');
+                    setToastType('success');
                     setToastPopUp(true);
                 }
             }
@@ -100,13 +134,17 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
 
     const handleClear = async () => {
         try {
-            const nullFormData = { account_number: null, bank: null };
-            await PatchBillingUserTossDeposit(nullFormData);
-            const responsePostData = await PatchBillingMeetingTossDeposit(
-                meetingId,
-                nullFormData,
-            );
-            if (responsePostData && responsePostData.status === 200) {
+            const emptyFormData = { account_number: '', bank: '' };
+            await PatchBillingUserTossDeposit(emptyFormData);
+            if (meetingId) {
+                const responsePostData = await PatchBillingMeetingTossDeposit(
+                    meetingId,
+                    emptyFormData,
+                );
+                if (responsePostData && responsePostData.status === 200) {
+                    setTossModalOpen(false);
+                }
+            } else {
                 setTossModalOpen(false);
             }
         } catch (error) {
@@ -115,11 +153,15 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
     };
 
     const handleSubmit = () => {
-        if (!actionType) {
-            alert('사용 방식을 선택해주세요.');
+        // 미팅이 없을 때는 기본값으로 처리
+        const effectiveAction = meetingId ? actionType : '계속해서 사용하기';
+        if (!effectiveAction) {
+            setToastMessage('사용 방식을 선택해주세요.');
+            setToastType('warning');
+            setToastPopUp(true);
             return;
         }
-        handleSave(actionType);
+        handleSave(effectiveAction);
     };
 
     return (
@@ -129,7 +171,7 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
-                className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+                className="fixed inset-0 z-50 flex items-center justify-center p-4"
             >
                 {/* Backdrop */}
                 <motion.div
@@ -147,7 +189,7 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
                     exit={{ opacity: 0, y: '100%' }}
                     transition={{ type: 'spring', damping: 30, stiffness: 400 }}
                     onClick={(e) => e.stopPropagation()}
-                    className="relative bg-white rounded-t-[32px] sm:rounded-[32px] w-full max-w-lg mx-auto max-h-[90vh] sm:max-h-[85vh] flex flex-col"
+                    className="relative bg-white rounded-[28px] w-full max-w-lg mx-auto max-h-[92vh] flex flex-col overflow-hidden shadow-2xl"
                 >
                     {/* 핸들 바 */}
                     <div className="pt-3 pb-4 px-6 border-b border-black/[0.06] rounded-t-[32px] flex-shrink-0">
@@ -189,7 +231,7 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
                                             }
                                         `}
                                     >
-                                        {bank}
+                                        {bank || user?.tossDepositInformation?.bank}
                                     </button>
                                 ))}
                             </div>
@@ -202,7 +244,7 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
                             </label>
                             <input
                                 type="text"
-                                value={accountNumber}
+                                value={accountNumber || user?.tossDepositInformation?.accountNumber}
                                 onChange={(e) =>
                                     setAccountNumber(
                                         e.target.value.replace(/[^0-9]/g, ''),
@@ -214,38 +256,39 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
                             />
                         </div>
 
-                        {/* 사용 방식 선택 */}
-                        <div>
-                            <label className="block text-[13px] font-semibold text-[#191f28] mb-3">
-                                사용 방식
-                            </label>
-                            <div className="space-y-2">
-                                <button
-                                    onClick={() =>
-                                        setActionType('이번에만 사용하기')
-                                    }
-                                    className={`w-full h-12 px-4 rounded-xl text-[14px] font-medium transition-all ${
-                                        actionType === '이번에만 사용하기'
-                                            ? 'bg-[#0064ff] text-white shadow-lg shadow-[#0064ff]/20'
-                                            : 'bg-[#f2f2f7] text-[#191f28] hover:bg-[#e5e5ea]'
-                                    }`}
-                                >
-                                    이번에만 사용하기
-                                </button>
-                                <button
-                                    onClick={() =>
-                                        setActionType('계속해서 사용하기')
-                                    }
-                                    className={`w-full h-12 px-4 rounded-xl text-[14px] font-medium transition-all ${
-                                        actionType === '계속해서 사용하기'
-                                            ? 'bg-[#0064ff] text-white shadow-lg shadow-[#0064ff]/20'
-                                            : 'bg-[#f2f2f7] text-[#191f28] hover:bg-[#e5e5ea]'
-                                    }`}
-                                >
-                                    계속해서 사용하기
-                                </button>
+
+                            <div>
+                                <label className="block text-[13px] font-semibold text-[#191f28] mb-3">
+                                    사용 방식
+                                </label>
+                                <div className="space-y-2">
+                                    <button
+                                        onClick={() =>
+                                            setActionType('이번에만 사용하기')
+                                        }
+                                        className={`w-full h-12 px-4 rounded-xl text-[14px] font-medium transition-all ${
+                                            actionType === '이번에만 사용하기'
+                                                ? 'bg-[#0064ff] text-white shadow-lg shadow-[#0064ff]/20'
+                                                : 'bg-[#f2f2f7] text-[#191f28] hover:bg-[#e5e5ea]'
+                                        }`}
+                                    >
+                                        이번에만 사용하기
+                                    </button>
+                                    <button
+                                        onClick={() =>
+                                            setActionType('계속해서 사용하기')
+                                        }
+                                        className={`w-full h-12 px-4 rounded-xl text-[14px] font-medium transition-all ${
+                                            actionType === '계속해서 사용하기'
+                                                ? 'bg-[#0064ff] text-white shadow-lg shadow-[#0064ff]/20'
+                                                : 'bg-[#f2f2f7] text-[#191f28] hover:bg-[#e5e5ea]'
+                                        }`}
+                                    >
+                                        계속해서 사용하기
+                                    </button>
+                                </div>
                             </div>
-                        </div>
+
 
                         {/* 안내 */}
                         <div className="bg-[#0064ff]/10 rounded-2xl p-4 border border-[#0064ff]/20">
@@ -269,7 +312,7 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
                         {(meetingName?.toss_deposit_information
                             ?.account_number ||
                             meetingName?.tossDepositInformation
-                                ?.accountNumber) && (
+                                ?.accountNumber || user?.tossDepositInformation?.accountNumber) && (
                             <button
                                 onClick={handleClear}
                                 disabled={isSaving}
@@ -290,8 +333,9 @@ const BillingTossModal = ({ setTossModalOpen, meetingName }) => {
             </motion.div>
             {toastPopUp && (
                 <ToastPopUp
-                    message="저장이 완료되었어요."
+                    message={toastMessage || '저장이 완료되었어요.'}
                     setToastPopUp={setToastPopUp}
+                    type={toastType}
                 />
             )}
         </AnimatePresence>
