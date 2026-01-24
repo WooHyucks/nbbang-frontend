@@ -18,6 +18,7 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
     const [clearFilesTrigger, setClearFilesTrigger] = useState(0);
     const [showLimitModal, setShowLimitModal] = useState(false);
     const [limitModalType, setLimitModalType] = useState('personal'); // 'personal' | 'server'
+    const [showSurveyModal, setShowSurveyModal] = useState(false);
 
     // 일반 스크롤
     const scrollToBottom = () => {
@@ -704,7 +705,7 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                                         <button
                                             onClick={() => {
                                                 sendEventToAmplitude('click ai settlement survey from limit', {});
-                                                window.open('https://forms.gle/YOUR_SURVEY_LINK', '_blank');
+                                                setShowSurveyModal(true);
                                             }}
                                             className="w-full px-4 py-2 bg-[#3182F6] text-white rounded-lg text-sm font-semibold hover:bg-[#1E6FFF] transition-colors active:scale-95"
                                         >
@@ -779,23 +780,6 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                                                 ? '오늘 이미지 분석 횟수를 모두 사용했습니다' 
                                                 : '이미지를 올리면 AI가 자동으로 분석해요'}
                                         </p>
-                                        {/* AI 정산 설문 후킹 (횟수 다 썼을 때) */}
-                                        {isLimitReached && (
-                                            <div className="mt-3 px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl">
-                                                <p className="text-xs text-gray-700 mb-2 text-center">
-                                                    💬 AI 정산 서비스가 어떠셨나요?
-                                                </p>
-                                                <button
-                                                    onClick={() => {
-                                                        sendEventToAmplitude('click ai settlement survey from limit', {});
-                                                        window.open('https://forms.gle/YOUR_SURVEY_LINK', '_blank');
-                                                    }}
-                                                    className="w-full px-4 py-2 bg-[#3182F6] text-white rounded-lg text-sm font-semibold hover:bg-[#1E6FFF] transition-colors active:scale-95"
-                                                >
-                                                    설문 참여하기
-                                                </button>
-                                            </div>
-                                        )}
                                         {/* 남은 횟수 표시 */}
                                         {user && !isLimitReached && (
                                             <div className={`mt-2 px-3 py-1.5 rounded-lg border text-xs inline-flex items-center gap-1.5 ${
@@ -829,6 +813,24 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                                         className={isLimitReached ? 'text-gray-400 opacity-60' : 'text-blue-600 opacity-60'}
                                     />
                                 </button>
+                                {/* AI 정산 설문 후킹 (횟수 다 썼을 때) - 부모 버튼 밖으로 분리 */}
+                                {isLimitReached && (
+                                    <div className="mt-3 px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-xl">
+                                        <p className="text-xs text-gray-700 mb-2 text-center">
+                                            💬 AI 정산 서비스가 어떠셨나요?
+                                        </p>
+                                        <button
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                sendEventToAmplitude('click ai settlement survey from limit', {});
+                                                setShowSurveyModal(true);
+                                            }}
+                                            className="w-full px-4 py-2 bg-[#3182F6] text-white rounded-lg text-sm font-semibold hover:bg-[#1E6FFF] transition-colors active:scale-95"
+                                        >
+                                            설문 참여하기
+                                        </button>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
@@ -928,6 +930,22 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                     // 텍스트 모드로 전환 (이미지 제거, 입력창 포커스)
                     // 실제로는 이미지가 없으면 텍스트 모드이므로 별도 처리 불필요
                     // 모달만 닫으면 됨
+                }}
+            />
+            
+            {/* AI 정산 설문 모달 */}
+            <AiAnalysisLimitModal
+                isOpen={showSurveyModal}
+                onClose={() => setShowSurveyModal(false)}
+                type="personal"
+                onSwitchToText={() => {
+                    // 텍스트 입력으로 포커스 이동
+                    setTimeout(() => {
+                        const textarea = document.querySelector('textarea');
+                        if (textarea) {
+                            textarea.focus();
+                        }
+                    }, 100);
                 }}
             />
             
