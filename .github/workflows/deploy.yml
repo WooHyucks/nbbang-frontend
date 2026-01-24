@@ -30,6 +30,14 @@ jobs:
               run: npm install
               timeout-minutes: 5
 
+            - name: Verify environment variables
+              run: |
+                if [ -z "${{ secrets.VITE_AMPLITUDE_API_KEY }}" ]; then
+                  echo "ERROR: VITE_AMPLITUDE_API_KEY is not set in GitHub Secrets"
+                  exit 1
+                fi
+                echo "Environment variables verified successfully"
+
             - name: Build Project
               run: npm run build
               env:
