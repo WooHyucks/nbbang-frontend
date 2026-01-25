@@ -40,5 +40,42 @@
         <noscript>You need to enable JavaScript to run this app.</noscript>
         <div id="root"></div>
         <script type="module" src="/src/main.jsx"></script>
+        <!-- 서비스 워커 자폭 코드 등록 -->
+        <script>
+            // 자폭 서비스 워커 등록 (기존 서비스 워커를 대체하고 삭제하기 위함)
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker.register('/service-worker.js')
+                        .then((registration) => {
+                            console.log('[Service Worker] Self-destruct worker registered:', registration.scope);
+                            // 즉시 활성화되도록 강제
+                            if (registration.waiting) {
+                                registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                            }
+                            if (registration.installing) {
+                                registration.installing.addEventListener('statechange', (e) => {
+                                    if (e.target.state === 'installed' && navigator.serviceWorker.controller) {
+                                        registration.waiting?.postMessage({ type: 'SKIP_WAITING' });
+                                    }
+                                });
+                            }
+                            // 활성화 이벤트 리스너
+                            registration.addEventListener('updatefound', () => {
+                                const newWorker = registration.installing;
+                                if (newWorker) {
+                                    newWorker.addEventListener('statechange', () => {
+                                        if (newWorker.state === 'activated') {
+                                            console.log('[Service Worker] Self-destruct worker activated');
+                                        }
+                                    });
+                                }
+                            });
+                        })
+                        .catch((error) => {
+                            console.error('[Service Worker] Registration failed:', error);
+                        });
+                });
+            }
+        </script>
     </body>
 </html>
