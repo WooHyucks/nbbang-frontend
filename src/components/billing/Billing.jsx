@@ -206,10 +206,6 @@ const Billing = ({ payment, meetingName, setMeetingName }) => {
         }
 
         const imageUrl = `${window.location.origin}/kakao_feed.png`;
-        
-        // 캐시 무효화를 위한 타임스탬프 추가
-        const separator = meetingName.share_link.includes('?') ? '&' : '?';
-        const shareLinkWithCacheBust = `${meetingName.share_link}${separator}v=${Date.now()}`;
 
         window.Kakao.Link.sendDefault({
             objectType: 'feed',
@@ -220,16 +216,16 @@ const Billing = ({ payment, meetingName, setMeetingName }) => {
                     : `${meetingName.name}의 정산결과 입니다.`,
                 imageUrl: imageUrl,
                 link: {
-                    webUrl: shareLinkWithCacheBust,
-                    mobileWebUrl: shareLinkWithCacheBust,
+                    webUrl: meetingName.share_link,
+                    mobileWebUrl: meetingName.share_link,
                 },
             },
             buttons: [
                 {
                     title: '정산 내역 확인하러가기',
                     link: {
-                        webUrl: shareLinkWithCacheBust,
-                        mobileWebUrl: shareLinkWithCacheBust,
+                        webUrl: meetingName.share_link,
+                        mobileWebUrl: meetingName.share_link,
                     },
                 },
             ],
@@ -239,10 +235,7 @@ const Billing = ({ payment, meetingName, setMeetingName }) => {
 
     const handleCopyLink = async () => {
         try {
-            // 캐시 무효화를 위한 타임스탬프 추가
-            const separator = meetingName.share_link.includes('?') ? '&' : '?';
-            const shareLinkWithCacheBust = `${meetingName.share_link}${separator}v=${Date.now()}`;
-            await navigator.clipboard.writeText(shareLinkWithCacheBust);
+            await navigator.clipboard.writeText(meetingName.share_link);
             setToastPopUp(true);
         } catch (error) {
             console.error('클립보드 복사 실패');

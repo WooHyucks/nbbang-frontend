@@ -65,8 +65,7 @@ const BillingPage = () => {
             return;
         }
 
-        const baseLink = `${window.location.origin}/share?ai=${meetingData.uuid}`;
-        const shareLink = `${baseLink}&v=${Date.now()}`;
+        const shareLink = `${window.location.origin}/share?ai=${meetingData.uuid}`;
 
         try {
             await navigator.clipboard.writeText(shareLink);

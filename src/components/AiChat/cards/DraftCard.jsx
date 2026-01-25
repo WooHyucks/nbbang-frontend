@@ -157,8 +157,7 @@ const DraftCard = ({
                 
                 // uuid가 있으면 바로 링크 생성 및 복사
                 if (resultUuid) {
-                    const baseLink = `${window.location.origin}/share?ai=${resultUuid}`;
-                    const shareLink = `${baseLink}&v=${Date.now()}`;
+                    const shareLink = `${window.location.origin}/share?ai=${resultUuid}`;
                     
                     // 링크 복사
                     await navigator.clipboard.writeText(shareLink);
@@ -198,8 +197,7 @@ const DraftCard = ({
 
         try {
             // 현재 도메인 + /share?ai={uuid} 형식으로 링크 생성
-            const baseLink = `${window.location.origin}/share?ai=${uuid}`;
-            const shareLink = `${baseLink}&v=${Date.now()}`;
+            const shareLink = `${window.location.origin}/share?ai=${uuid}`;
             
             await navigator.clipboard.writeText(shareLink);
             setToastMessage('정산 결과 링크가 복사되었습니다.');

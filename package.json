@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cp public/sw-killer.js dist/service-worker.js",
+    "build": "vite build",
     "preview": "vite preview",
     "test": "react-scripts test",
     "eject": "react-scripts eject"

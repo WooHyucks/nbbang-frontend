@@ -242,8 +242,7 @@ const AiMeetingDetail = () => {
             return;
         }
 
-        const baseLink = `${window.location.origin}/share?ai=${currentMeeting.uuid}`;
-        const shareLink = `${baseLink}&v=${Date.now()}`;
+        const shareLink = `${window.location.origin}/share?ai=${currentMeeting.uuid}`;
 
         try {
             await navigator.clipboard.writeText(shareLink);

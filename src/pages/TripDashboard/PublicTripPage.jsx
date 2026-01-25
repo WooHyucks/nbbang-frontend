@@ -217,9 +217,7 @@ const PublicTripPage = () => {
 
     const handleCopyLink = async () => {
         try {
-            const baseLink = window.location.href;
-            const separator = baseLink.includes('?') ? '&' : '?';
-            const shareLink = `${baseLink}${separator}v=${Date.now()}`;
+            const shareLink = window.location.href;
             await navigator.clipboard.writeText(shareLink);
             setCopiedLink(true);
             setTimeout(() => setCopiedLink(false), 2000);
@@ -242,9 +240,7 @@ const PublicTripPage = () => {
             window.Kakao.init(kakaoSdkKey);
         }
 
-        const baseLink = window.location.href;
-        const separator = baseLink.includes('?') ? '&' : '?';
-        const shareLink = `${baseLink}${separator}v=${Date.now()}`;
+        const shareLink = window.location.href;
         const imageUrl = `${window.location.origin}/kakao_feed.png`;
         const tripName = meeting?.name || `${countryInfo?.name || '여행'} 여행`;
 

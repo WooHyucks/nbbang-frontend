@@ -4,16 +4,6 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import './index.css';
 import App from './App';
 
-// [Kill Switch] 기존 서비스 워커 강제 삭제
-if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.ready.then((registration) => {
-        registration.unregister();
-    });
-    navigator.serviceWorker.getRegistrations().then((registrations) => {
-        for (let registration of registrations) registration.unregister();
-    });
-}
-
 // TanStack Query Client 생성
 const queryClient = new QueryClient({
     defaultOptions: {

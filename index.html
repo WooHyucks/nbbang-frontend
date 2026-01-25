@@ -1,43 +1,147 @@
 <!doctype html>
-<html lang="ko">
+<html lang="en">
     <head>
-        <meta charset="utf-8" />
-        <link rel="png" href="/public/images/nbbang.png" />
-        <meta property="og:url" content="nbbang.shop" />
-        <meta property="og:title" content="엔빵" />
-        <meta property="og:type" content="website" />
-        <meta property="og:image" content="nbbangMetaPng_v1.png" />
-        <meta property="og:description" content="AI 정산, 원클릭 송금" />
-        <meta
-            http-equiv="Content-Security-Policy"
-            content="upgrade-insecure-requests"
-        />
-        <link rel="icon" href="favicon.ico" />
-        <script src="https://developers.kakao.com/sdk/js/kakao.js"></script>
-        <link
-            href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css"
-            rel="stylesheet"
-        />
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-        <meta name="theme-color" content="#0044FE" />
-        <link rel="icon" type="image/png" href="/public/images/nbbang.png" />
+        <meta charset="UTF-8" />
+        <link rel="icon" type="image/svg+xml" href="/nbbang_icon.png" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
-        <meta http-equiv="Pragma" content="no-cache" />
-        <meta http-equiv="Expires" content="0" />
-        <meta name="theme-color" content="#0044FE" />
-        <link rel="apple-touch-icon" href="/public/images/nbbang.png" />
         <meta
-            name="viewport"
-            content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
+            name="description"
+            content="엔빵 - 여행 경비 정산을 쉽고 빠르게! AI가 영수증을 분석하고 자동으로 정산해드립니다."
         />
-        <meta name="description" content="AI 정산, 원클릭 송금" />
-        <title>엔빵</title>
-        <!-- 개발자 도구 차단 스크립트 (프로덕션 전용) -->
-        <!-- <script src="/security.js"></script> -->
+        <meta
+            name="keywords"
+            content="여행 정산, 경비 정산, 더치페이, 엔빵, AI 영수증 분석"
+        />
+        <meta name="author" content="엔빵팀" />
+
+        <!-- Open Graph / Facebook -->
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://nbbang.shop/" />
+        <meta property="og:title" content="엔빵 - 여행 경비 정산 서비스" />
+        <meta
+            property="og:description"
+            content="AI가 영수증을 분석하고 자동으로 정산해드립니다."
+        />
+        <meta
+            property="og:image"
+            content="https://nbbang.shop/nbbangMetaPng_v1.png"
+        />
+
+        <!-- Twitter -->
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:url" content="https://nbbang.shop/" />
+        <meta
+            property="twitter:title"
+            content="엔빵 - 여행 경비 정산 서비스"
+        />
+        <meta
+            property="twitter:description"
+            content="AI가 영수증을 분석하고 자동으로 정산해드립니다."
+        />
+        <meta
+            property="twitter:image"
+            content="https://nbbang.shop/nbbangMetaPng_v1.png"
+        />
+
+        <title>엔빵 - 여행 경비 정산 서비스</title>
+
+        <!-- Kakao SDK -->
+        <script
+            src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.4/kakao.min.js"
+            integrity="sha384-DKYJZ8NLiK8MN4/C5P2dtSmLQ4KwPaoqAfyA/DfmEc1VDxu4yyC7wy6K1Hs90nka"
+            crossorigin="anonymous"
+        ></script>
+
+        <!-- Google Analytics -->
+        <script
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=G-VVZJ0LQPFS"
+        ></script>
+        <script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag('js', new Date());
+            gtag('config', 'G-VVZJ0LQPFS');
+        </script>
+
+        <!-- Naver Site Verification -->
+        <meta
+            name="naver-site-verification"
+            content="0f6f0c3c9c6e5f6b0e6e5f6b0e6e5f6b0e6e5f6b"
+        />
+
+        <!-- Service Worker Registration -->
+        <script>
+            if ('serviceWorker' in navigator) {
+                window.addEventListener('load', () => {
+                    navigator.serviceWorker
+                        .register('/service-worker.js')
+                        .then((registration) => {
+                            console.log(
+                                '[Service Worker] Registered (no-cache mode):',
+                                registration.scope,
+                            );
+
+                            // 업데이트 감지 시 자동 활성화
+                            registration.addEventListener('updatefound', () => {
+                                const newWorker = registration.installing;
+                                console.log(
+                                    '[Service Worker] Update detected, installing new worker...',
+                                );
+
+                                newWorker.addEventListener(
+                                    'statechange',
+                                    () => {
+                                        if (newWorker.state === 'installed') {
+                                            if (
+                                                navigator.serviceWorker
+                                                    .controller
+                                            ) {
+                                                console.log(
+                                                    '[Service Worker] New version available, activating...',
+                                                );
+                                                // 새 서비스 워커에게 즉시 활성화 요청
+                                                newWorker.postMessage({
+                                                    type: 'SKIP_WAITING',
+                                                });
+                                            } else {
+                                                console.log(
+                                                    '[Service Worker] First install complete',
+                                                );
+                                            }
+                                        }
+                                    },
+                                );
+                            });
+                        })
+                        .catch((error) => {
+                            console.error(
+                                '[Service Worker] Registration failed:',
+                                error,
+                            );
+                        });
+
+                    // 서비스 워커 제어권 변경 시 페이지 새로고침
+                    let refreshing = false;
+                    navigator.serviceWorker.addEventListener(
+                        'controllerchange',
+                        () => {
+                            if (!refreshing) {
+                                console.log(
+                                    '[Service Worker] Controller changed, reloading page...',
+                                );
+                                refreshing = true;
+                                window.location.reload();
+                            }
+                        },
+                    );
+                });
+            }
+        </script>
     </head>
     <body>
-        <noscript>You need to enable JavaScript to run this app.</noscript>
         <div id="root"></div>
         <script type="module" src="/src/main.jsx"></script>
     </body>
