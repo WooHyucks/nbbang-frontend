@@ -46,6 +46,10 @@ const KakaoShare = ({ meetingName }) => {
     const shareKakao = () => {
         // 카카오 공유 API는 절대 URL이 필요하므로 현재 도메인 기반으로 이미지 URL 생성
         const imageUrl = `${window.location.origin}/kakao_feed.png`;
+        
+        // 캐시 무효화를 위한 타임스탬프 추가
+        const separator = meetingName.share_link.includes('?') ? '&' : '?';
+        const shareLinkWithCacheBust = `${meetingName.share_link}${separator}v=${Date.now()}`;
 
         window.Kakao.Link.sendDefault({
             objectType: 'feed',
@@ -56,16 +60,16 @@ const KakaoShare = ({ meetingName }) => {
                     : `${meetingName.name}의 정산결과 입니다.`,
                 imageUrl: imageUrl,
                 link: {
-                    webUrl: meetingName.share_link,
-                    mobileWebUrl: meetingName.share_link,
+                    webUrl: shareLinkWithCacheBust,
+                    mobileWebUrl: shareLinkWithCacheBust,
                 },
             },
             buttons: [
                 {
                     title: '정산 내역 확인하러가기',
                     link: {
-                        webUrl: meetingName.share_link,
-                        mobileWebUrl: meetingName.share_link,
+                        webUrl: shareLinkWithCacheBust,
+                        mobileWebUrl: shareLinkWithCacheBust,
                     },
                 },
             ],

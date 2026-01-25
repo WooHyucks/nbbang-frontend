@@ -28,7 +28,7 @@ const SigndLogo = () => {
                 src="/images/nbbang.png"
                 onClick={() => (window.location.href = '/')}
             />
-            <SigndComent>빠른 정산, 원클릭 송금</SigndComent>
+            <SigndComent>AI 정산, 원클릭 송금</SigndComent>
         </SigndLogoContainer>
     );
 };

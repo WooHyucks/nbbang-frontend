@@ -172,15 +172,17 @@ const TripDashboard = () => {
         }
     };
 
-    // 링크 생성 및 공유 핸들러들
-    const getSharePageLink = () =>
-        tripInfo?.uuid
-            ? `${window.location.origin}/meeting/share/trip?uuid=${tripInfo.uuid}`
-            : null;
-    const getResultPageLink = () =>
-        tripInfo?.uuid
-            ? `${window.location.origin}/meeting/trip-page?uuid=${tripInfo.uuid}`
-            : null;
+    // 링크 생성 및 공유 핸들러들 (캐시 무효화를 위한 타임스탬프 포함)
+    const getSharePageLink = () => {
+        if (!tripInfo?.uuid) return null;
+        const baseLink = `${window.location.origin}/meeting/share/trip?uuid=${tripInfo.uuid}`;
+        return `${baseLink}&v=${Date.now()}`;
+    };
+    const getResultPageLink = () => {
+        if (!tripInfo?.uuid) return null;
+        const baseLink = `${window.location.origin}/meeting/trip-page?uuid=${tripInfo.uuid}`;
+        return `${baseLink}&v=${Date.now()}`;
+    };
 
     const handleCopyShareLink = async () => {
         try {

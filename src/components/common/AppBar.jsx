@@ -65,7 +65,7 @@ const AppBar = () => {
                             앱에서 더 빠르게 정산하기
                         </span>
                         <span className="text-[12px] text-blue-50 md:text-sm truncate">
-                            원클릭 송금까지 한 번에
+                            AI 정산, 원클릭 송금까지 한 번에
                         </span>
                     </div>
                 </div>
