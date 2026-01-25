@@ -72,61 +72,57 @@
             content="0f6f0c3c9c6e5f6b0e6e5f6b0e6e5f6b0e6e5f6b"
         />
 
-        <!-- Service Worker Auto Update (Multiple Workers) -->
+        <!-- Service Worker Auto Update -->
         <script>
             if ('serviceWorker' in navigator) {
                 window.addEventListener('load', () => {
-                    // 서비스 워커 등록 (두 가지 경로)
-                    const workerPaths = ['/service-worker.js', '/sw.js'];
-                    
-                    workerPaths.forEach((path) => {
-                        navigator.serviceWorker
-                            .register(path)
-                            .then((registration) => {
-                                console.log(
-                                    `[SW] Worker registered (${path}):`,
-                                    registration.scope,
-                                );
+                    // 서비스 워커 등록
+                    navigator.serviceWorker
+                        .register('/sw.js')
+                        .then((registration) => {
+                            console.log(
+                                '[SW] Worker registered:',
+                                registration.scope,
+                            );
 
-                                // 5분마다 업데이트 체크
-                                setInterval(() => {
-                                    registration.update();
-                                }, 5 * 60 * 1000);
-
-                                // 즉시 한 번 체크
+                            // 5분마다 업데이트 체크
+                            setInterval(() => {
                                 registration.update();
+                            }, 5 * 60 * 1000);
 
-                                // 업데이트 감지
-                                registration.addEventListener('updatefound', () => {
-                                    const newWorker = registration.installing;
-                                    console.log(`[SW] Update detected! (${path})`);
+                            // 즉시 한 번 체크
+                            registration.update();
 
-                                    newWorker.addEventListener(
-                                        'statechange',
-                                        () => {
-                                            if (newWorker.state === 'installed') {
-                                                if (navigator.serviceWorker.controller) {
-                                                    console.log(
-                                                        `[SW] New version available (${path}), activating...`,
-                                                    );
-                                                    // 새 서비스 워커에게 즉시 활성화 요청
-                                                    newWorker.postMessage({
-                                                        type: 'SKIP_WAITING',
-                                                    });
-                                                } else {
-                                                    console.log(
-                                                        `[SW] First install complete (${path})`,
-                                                    );
-                                                }
+                            // 업데이트 감지
+                            registration.addEventListener('updatefound', () => {
+                                const newWorker = registration.installing;
+                                console.log('[SW] Update detected!');
+
+                                newWorker.addEventListener(
+                                    'statechange',
+                                    () => {
+                                        if (newWorker.state === 'installed') {
+                                            if (navigator.serviceWorker.controller) {
+                                                console.log(
+                                                    '[SW] New version available, activating...',
+                                                );
+                                                // 새 서비스 워커에게 즉시 활성화 요청
+                                                newWorker.postMessage({
+                                                    type: 'SKIP_WAITING',
+                                                });
+                                            } else {
+                                                console.log(
+                                                    '[SW] First install complete',
+                                                );
                                             }
-                                        },
-                                    );
-                                });
-                            })
-                            .catch((error) => {
-                                console.log(`[SW] Registration failed (${path}):`, error.message);
+                                        }
+                                    },
+                                );
                             });
-                    });
+                        })
+                        .catch((error) => {
+                            console.error('[SW] Registration failed:', error);
+                        });
 
                     // 제어권 변경 감지 시 페이지 새로고침
                     let refreshing = false;
