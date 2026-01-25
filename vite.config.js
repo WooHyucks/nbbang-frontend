@@ -1,21 +1,12 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import { VitePWA } from 'vite-plugin-pwa';
+// import { VitePWA } from 'vite-plugin-pwa'; // PWA 필요 없음
 
 export default defineConfig({
     plugins: [
         react(),
-        VitePWA({
-            strategies: 'injectManifest', // 커스텀 서비스 워커 사용
-            srcDir: 'public',
-            filename: 'service-worker.js',
-            injectManifest: {
-                injectionPoint: undefined, // 자동 주입 비활성화
-            },
-            registerType: 'autoUpdate',
-            manifest: false,
-        })
+        // PWA 플러그인 제거 - 서비스 워커 수동 관리
     ],
     resolve: {
         alias: {
