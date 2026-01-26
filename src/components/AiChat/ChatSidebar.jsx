@@ -18,7 +18,14 @@ import BillingNameModal from '../Modal/BillingNameModal';
 import { Skeleton } from '@/components/ui/skeleton';
 import ToastPopUp from '../common/ToastPopUp';
 
-const ChatSidebar = ({ isOpen, onClose, onNewChat, onSelectAiChat, refreshTrigger, activeMeetingId }) => {
+const ChatSidebar = ({
+    isOpen,
+    onClose,
+    onNewChat,
+    onSelectAiChat,
+    refreshTrigger,
+    activeMeetingId,
+}) => {
     const navigate = useNavigate();
     const [searchQuery, setSearchQuery] = useState('');
     const [activeTab, setActiveTab] = useState('전체');
@@ -37,7 +44,11 @@ const ChatSidebar = ({ isOpen, onClose, onNewChat, onSelectAiChat, refreshTrigge
     const transformMeetingToChat = (meeting) => {
         let type = '모임';
         // meetingType === 'ai' 또는 is_ai === true 체크 (최우선)
-        if (meeting.meetingType === 'ai' || meeting.is_ai === true || meeting.type === 'AI') {
+        if (
+            meeting.meetingType === 'ai' ||
+            meeting.is_ai === true ||
+            meeting.type === 'AI'
+        ) {
             type = 'AI';
         } else if (meeting.is_trip === true || meeting.is_trip === 1) {
             type = '여행';
@@ -119,17 +130,24 @@ const ChatSidebar = ({ isOpen, onClose, onNewChat, onSelectAiChat, refreshTrigge
     };
 
     const filteredChats = useMemo(() => {
-        let filtered = activeTab === '전체' 
-            ? chats 
-            : chats.filter(chat => chat.type === activeTab);
-        
+        let filtered =
+            activeTab === '전체'
+                ? chats
+                : chats.filter((chat) => chat.type === activeTab);
+
         if (searchQuery) {
-            filtered = filtered.filter(chat => 
-                chat.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                (chat.preview && chat.preview.toLowerCase().includes(searchQuery.toLowerCase()))
+            filtered = filtered.filter(
+                (chat) =>
+                    chat.title
+                        .toLowerCase()
+                        .includes(searchQuery.toLowerCase()) ||
+                    (chat.preview &&
+                        chat.preview
+                            .toLowerCase()
+                            .includes(searchQuery.toLowerCase())),
             );
         }
-        
+
         return filtered;
     }, [chats, activeTab, searchQuery]);
 
@@ -142,7 +160,7 @@ const ChatSidebar = ({ isOpen, onClose, onNewChat, onSelectAiChat, refreshTrigge
 
     const handleChatSelect = (chat) => {
         onClose();
-        
+
         // 타입별 라우팅 분기
         switch (chat.type) {
             case 'AI':
@@ -186,13 +204,15 @@ const ChatSidebar = ({ isOpen, onClose, onNewChat, onSelectAiChat, refreshTrigge
 
     const confirmDelete = async () => {
         if (!meetingToDelete) return;
-        
+
         setDeletingMeetingId(meetingToDelete.meetingId);
         setShowDeleteModal(false);
-        
+
         try {
             await deleteMeetingData(meetingToDelete.meetingId);
-            setMeetings(meetings.filter((m) => m.id !== meetingToDelete.meetingId));
+            setMeetings(
+                meetings.filter((m) => m.id !== meetingToDelete.meetingId),
+            );
         } catch (error) {
             console.error('미팅 삭제 실패:', error);
             alert('삭제에 실패했습니다.');
@@ -227,7 +247,9 @@ const ChatSidebar = ({ isOpen, onClose, onNewChat, onSelectAiChat, refreshTrigge
             {/* 사이드바 */}
             <div
                 className={`h-full w-80 bg-white border-r border-[#E5E8EB] flex-shrink-0 fixed top-0 left-0 z-50 transform transition-transform duration-300 ease-in-out md:relative md:translate-x-0 md:z-auto ${
-                    isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+                    isOpen
+                        ? 'translate-x-0'
+                        : '-translate-x-full md:translate-x-0'
                 }`}
             >
                 <div className="flex flex-col h-full">
@@ -247,10 +269,7 @@ const ChatSidebar = ({ isOpen, onClose, onNewChat, onSelectAiChat, refreshTrigge
                                 className="p-1.5 hover:bg-[#F2F4F6] rounded-xl transition-colors active:scale-95"
                                 aria-label="검색"
                             >
-                                <Search
-                                    size={18}
-                                    className="text-[#333D4B]"
-                                />
+                                <Search size={18} className="text-[#333D4B]" />
                             </button>
                         </div>
 
@@ -297,10 +316,7 @@ const ChatSidebar = ({ isOpen, onClose, onNewChat, onSelectAiChat, refreshTrigge
                                 <Plus size={18} />
                                 <span>새 채팅</span>
                             </div>
-                            <Square
-                                size={16}
-                                className="ml-auto opacity-60"
-                            />
+                            <Square size={16} className="ml-auto opacity-60" />
                         </button>
                     </div>
 
@@ -317,28 +333,32 @@ const ChatSidebar = ({ isOpen, onClose, onNewChat, onSelectAiChat, refreshTrigge
                             <div className="space-y-1">
                                 {isLoading ? (
                                     // 스켈레톤 UI
-                                    Array.from({ length: 5 }).map((_, index) => (
-                                        <div
-                                            key={index}
-                                            className="w-full p-3 rounded-[20px] bg-white"
-                                        >
-                                            <div className="flex items-start gap-3">
-                                                {/* 타입별 아이콘 박스 스켈레톤 */}
-                                                <Skeleton className="w-[54px] h-[54px] rounded-2xl bg-[#F2F4F6]" />
-                                                <div className="flex-1 min-w-0 space-y-2">
-                                                    {/* 제목 스켈레톤 */}
-                                                    <Skeleton className="h-4 w-3/4 rounded-md bg-[#F2F4F6]" />
-                                                    {/* Preview 스켈레톤 */}
-                                                    <Skeleton className="h-3 w-1/2 rounded-md bg-[#F2F4F6]" />
-                                                    {/* 날짜 스켈레톤 */}
-                                                    <Skeleton className="h-3 w-1/3 rounded-md bg-[#F2F4F6]" />
+                                    Array.from({ length: 5 }).map(
+                                        (_, index) => (
+                                            <div
+                                                key={index}
+                                                className="w-full p-3 rounded-[20px] bg-white"
+                                            >
+                                                <div className="flex items-start gap-3">
+                                                    {/* 타입별 아이콘 박스 스켈레톤 */}
+                                                    <Skeleton className="w-[54px] h-[54px] rounded-2xl bg-[#F2F4F6]" />
+                                                    <div className="flex-1 min-w-0 space-y-2">
+                                                        {/* 제목 스켈레톤 */}
+                                                        <Skeleton className="h-4 w-3/4 rounded-md bg-[#F2F4F6]" />
+                                                        {/* Preview 스켈레톤 */}
+                                                        <Skeleton className="h-3 w-1/2 rounded-md bg-[#F2F4F6]" />
+                                                        {/* 날짜 스켈레톤 */}
+                                                        <Skeleton className="h-3 w-1/3 rounded-md bg-[#F2F4F6]" />
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    ))
+                                        ),
+                                    )
                                 ) : filteredChats.length === 0 ? (
                                     <div className="text-center py-8 text-sm text-[#8B95A1]">
-                                        {searchQuery ? '검색 결과가 없습니다' : '채팅이 없습니다'}
+                                        {searchQuery
+                                            ? '검색 결과가 없습니다'
+                                            : '채팅이 없습니다'}
                                     </div>
                                 ) : (
                                     filteredChats.map((chat) => (
@@ -347,16 +367,22 @@ const ChatSidebar = ({ isOpen, onClose, onNewChat, onSelectAiChat, refreshTrigge
                                             className="w-full relative group"
                                         >
                                             <button
-                                                onClick={() => handleChatSelect(chat)}
+                                                onClick={() =>
+                                                    handleChatSelect(chat)
+                                                }
                                                 className={`w-full text-left p-3 rounded-[20px] hover:bg-[#F2F4F6] transition-all active:scale-[0.98] ${
-                                                    activeMeetingId && chat.meetingId === activeMeetingId
+                                                    activeMeetingId &&
+                                                    chat.meetingId ===
+                                                        activeMeetingId
                                                         ? 'bg-[#E5E8EB] border-l-4 border-[#3182F6]'
                                                         : ''
                                                 }`}
                                             >
                                                 <div className="flex items-start gap-3">
                                                     {/* 타입별 아이콘 박스 */}
-                                                    <div className={`${getTypeBgColor(chat.type)} p-3 rounded-2xl flex-shrink-0`}>
+                                                    <div
+                                                        className={`${getTypeBgColor(chat.type)} p-3 rounded-2xl flex-shrink-0`}
+                                                    >
                                                         {getTypeIcon(chat.type)}
                                                     </div>
                                                     <div className="flex-1 min-w-0">
@@ -375,22 +401,36 @@ const ChatSidebar = ({ isOpen, onClose, onNewChat, onSelectAiChat, refreshTrigge
                                             {/* 수정/삭제 버튼 (모바일: 항상 표시, 데스크탑: hover 시 표시) */}
                                             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 opacity-100 md:opacity-0 md:group-hover:opacity-100 transition-opacity">
                                                 <button
-                                                    onClick={(e) => handleEdit(e, chat)}
+                                                    onClick={(e) =>
+                                                        handleEdit(e, chat)
+                                                    }
                                                     className="p-1.5 hover:bg-[#E5E8EB] active:bg-[#E5E8EB] rounded-lg transition-colors"
                                                     aria-label="수정"
                                                 >
-                                                    <Pencil size={14} className="text-[#8B95A1]" />
+                                                    <Pencil
+                                                        size={14}
+                                                        className="text-[#8B95A1]"
+                                                    />
                                                 </button>
                                                 <button
-                                                    onClick={(e) => handleDelete(e, chat)}
-                                                    disabled={deletingMeetingId === chat.meetingId}
+                                                    onClick={(e) =>
+                                                        handleDelete(e, chat)
+                                                    }
+                                                    disabled={
+                                                        deletingMeetingId ===
+                                                        chat.meetingId
+                                                    }
                                                     className="p-1.5 hover:bg-[#E5E8EB] active:bg-[#E5E8EB] rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed relative"
                                                     aria-label="삭제"
                                                 >
-                                                    {deletingMeetingId === chat.meetingId ? (
+                                                    {deletingMeetingId ===
+                                                    chat.meetingId ? (
                                                         <div className="w-[14px] h-[14px] border-2 border-[#8B95A1] border-t-transparent rounded-full animate-spin" />
                                                     ) : (
-                                                        <Trash2 size={14} className="text-[#8B95A1]" />
+                                                        <Trash2
+                                                            size={14}
+                                                            className="text-[#8B95A1]"
+                                                        />
                                                     )}
                                                 </button>
                                             </div>

@@ -118,7 +118,11 @@ const AiAnalysisLimitModal = ({ isOpen, onClose, type, onSwitchToText }) => {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                            transition={{
+                                type: 'spring',
+                                damping: 25,
+                                stiffness: 300,
+                            }}
                             className="fixed inset-0 z-[101] flex items-center justify-center p-4"
                             onClick={(e) => e.stopPropagation()}
                         >
@@ -146,38 +150,68 @@ const AiAnalysisLimitModal = ({ isOpen, onClose, type, onSwitchToText }) => {
                                     {isPersonalLimit ? (
                                         <>
                                             <p className="text-sm text-gray-600 leading-relaxed mb-6">
-                                                베타 기간이라 하루 5회 제한이 있어요. 😭
+                                                베타 기간이라 하루 5회 제한이
+                                                있어요. 😭
                                                 <br />
                                                 <br />
                                                 <span className="font-semibold text-gray-900">
-                                                    지금까지 써보신 AI 정산 기능, 어떠셨나요?
+                                                    지금까지 써보신 AI 정산
+                                                    기능, 어떠셨나요?
                                                 </span>
                                                 <br />
-                                                버튼을 눌러주시면 서비스 발전에 큰 도움이 됩니다!
+                                                버튼을 눌러주시면 서비스 발전에
+                                                큰 도움이 됩니다!
                                             </p>
 
                                             {/* 피드백 버튼 그리드 */}
                                             <div className="grid grid-cols-1 gap-3 mb-6">
                                                 <button
-                                                    onClick={() => handleFeedbackClick('POSITIVE', '완전 편해요!')}
+                                                    onClick={() =>
+                                                        handleFeedbackClick(
+                                                            'POSITIVE',
+                                                            '완전 편해요!',
+                                                        )
+                                                    }
                                                     className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-blue-50 to-blue-100 border-2 border-blue-200 rounded-xl hover:border-blue-300 hover:shadow-md transition-all font-semibold text-gray-900 active:scale-95"
                                                 >
-                                                    <span className="text-2xl">😍</span>
-                                                    <span className="text-base">완전 편해요!</span>
+                                                    <span className="text-2xl">
+                                                        😍
+                                                    </span>
+                                                    <span className="text-base">
+                                                        완전 편해요!
+                                                    </span>
                                                 </button>
                                                 <button
-                                                    onClick={() => handleFeedbackClick('NEUTRAL', '살짝 아쉬워요')}
+                                                    onClick={() =>
+                                                        handleFeedbackClick(
+                                                            'NEUTRAL',
+                                                            '살짝 아쉬워요',
+                                                        )
+                                                    }
                                                     className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-amber-50 to-amber-100 border-2 border-amber-200 rounded-xl hover:border-amber-300 hover:shadow-md transition-all font-semibold text-gray-900 active:scale-95"
                                                 >
-                                                    <span className="text-2xl">🤔</span>
-                                                    <span className="text-base">살짝 아쉬워요</span>
+                                                    <span className="text-2xl">
+                                                        🤔
+                                                    </span>
+                                                    <span className="text-base">
+                                                        살짝 아쉬워요
+                                                    </span>
                                                 </button>
                                                 <button
-                                                    onClick={() => handleFeedbackClick('NEGATIVE', '직접 입력이 편해요')}
+                                                    onClick={() =>
+                                                        handleFeedbackClick(
+                                                            'NEGATIVE',
+                                                            '직접 입력이 편해요',
+                                                        )
+                                                    }
                                                     className="w-full flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-gray-50 to-gray-100 border-2 border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-md transition-all font-semibold text-gray-900 active:scale-95"
                                                 >
-                                                    <span className="text-2xl">🔙</span>
-                                                    <span className="text-base">직접 입력이 편해요</span>
+                                                    <span className="text-2xl">
+                                                        🔙
+                                                    </span>
+                                                    <span className="text-base">
+                                                        직접 입력이 편해요
+                                                    </span>
                                                 </button>
                                             </div>
 
@@ -185,10 +219,16 @@ const AiAnalysisLimitModal = ({ isOpen, onClose, type, onSwitchToText }) => {
                                             {!showFeedbackInput ? (
                                                 <button
                                                     onClick={() => {
-                                                        sendEventToAmplitude('click ai settlement survey feedback input', {
-                                                            limit_type: 'personal',
-                                                        });
-                                                        setShowFeedbackInput(true);
+                                                        sendEventToAmplitude(
+                                                            'click ai settlement survey feedback input',
+                                                            {
+                                                                limit_type:
+                                                                    'personal',
+                                                            },
+                                                        );
+                                                        setShowFeedbackInput(
+                                                            true,
+                                                        );
                                                     }}
                                                     className="w-full flex items-center justify-center gap-2 px-5 py-3.5 mb-3 bg-white border-2 border-gray-200 text-gray-700 rounded-xl hover:border-gray-300 hover:bg-gray-50 transition-all font-semibold active:scale-95"
                                                 >
@@ -199,7 +239,11 @@ const AiAnalysisLimitModal = ({ isOpen, onClose, type, onSwitchToText }) => {
                                                 <div className="mb-3">
                                                     <textarea
                                                         value={feedbackMessage}
-                                                        onChange={(e) => setFeedbackMessage(e.target.value)}
+                                                        onChange={(e) =>
+                                                            setFeedbackMessage(
+                                                                e.target.value,
+                                                            )
+                                                        }
                                                         placeholder="의견을 자유롭게 남겨주세요..."
                                                         className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-[#3182F6] resize-none text-sm"
                                                         rows={4}
@@ -208,19 +252,31 @@ const AiAnalysisLimitModal = ({ isOpen, onClose, type, onSwitchToText }) => {
                                                     <div className="flex gap-2 mt-2">
                                                         <button
                                                             onClick={() => {
-                                                                sendEventToAmplitude('cancel ai settlement survey feedback input', {
-                                                                    limit_type: 'personal',
-                                                                });
-                                                                setShowFeedbackInput(false);
-                                                                setFeedbackMessage('');
+                                                                sendEventToAmplitude(
+                                                                    'cancel ai settlement survey feedback input',
+                                                                    {
+                                                                        limit_type:
+                                                                            'personal',
+                                                                    },
+                                                                );
+                                                                setShowFeedbackInput(
+                                                                    false,
+                                                                );
+                                                                setFeedbackMessage(
+                                                                    '',
+                                                                );
                                                             }}
                                                             className="flex-1 px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-all font-medium active:scale-95"
                                                         >
                                                             취소
                                                         </button>
                                                         <button
-                                                            onClick={handleSubmitFeedback}
-                                                            disabled={!feedbackMessage.trim()}
+                                                            onClick={
+                                                                handleSubmitFeedback
+                                                            }
+                                                            disabled={
+                                                                !feedbackMessage.trim()
+                                                            }
                                                             className="flex-1 px-4 py-2 bg-[#3182F6] text-white rounded-lg hover:bg-[#1E6FFF] transition-all font-semibold active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                                                         >
                                                             제출하기
@@ -241,9 +297,12 @@ const AiAnalysisLimitModal = ({ isOpen, onClose, type, onSwitchToText }) => {
                                     ) : (
                                         <>
                                             <p className="text-sm text-gray-600 leading-relaxed mb-6">
-                                                폭발적인 인기로 오늘 서버 용량이 모두 소진되었습니다. (내일 0시 재개)
+                                                폭발적인 인기로 오늘 서버 용량이
+                                                모두 소진되었습니다. (내일 0시
+                                                재개)
                                                 <br />
-                                                지금은 텍스트 입력으로 정산해 보세요.
+                                                지금은 텍스트 입력으로 정산해
+                                                보세요.
                                             </p>
 
                                             <button
@@ -275,4 +334,3 @@ const AiAnalysisLimitModal = ({ isOpen, onClose, type, onSwitchToText }) => {
 };
 
 export default AiAnalysisLimitModal;
-

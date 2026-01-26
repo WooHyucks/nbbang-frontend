@@ -32,19 +32,19 @@ jobs:
 
             - name: Verify environment variables
               run: |
-                if [ -z "${{ secrets.VITE_AMPLITUDE_API_KEY }}" ]; then
-                  echo "ERROR: VITE_AMPLITUDE_API_KEY is not set in GitHub Secrets"
-                  exit 1
-                fi
-                echo "Environment variables verified successfully"
+                  if [ -z "${{ secrets.VITE_AMPLITUDE_API_KEY }}" ]; then
+                    echo "ERROR: VITE_AMPLITUDE_API_KEY is not set in GitHub Secrets"
+                    exit 1
+                  fi
+                  echo "Environment variables verified successfully"
 
             - name: Build Project
               run: npm run build
               env:
-                VITE_AMPLITUDE_API_KEY: ${{ secrets.VITE_AMPLITUDE_API_KEY }}
-                VITE_NAVER_CLIENT_ID: ${{ secrets.VITE_NAVER_CLIENT_ID }}
-                VITE_KAKAO_SDK_KEY: ${{ secrets.VITE_KAKAO_SDK_KEY }}
-                VITE_KAKAO_CLIENT_ID: ${{ secrets.VITE_KAKAO_CLIENT_ID }}
+                  VITE_AMPLITUDE_API_KEY: ${{ secrets.VITE_AMPLITUDE_API_KEY }}
+                  VITE_NAVER_CLIENT_ID: ${{ secrets.VITE_NAVER_CLIENT_ID }}
+                  VITE_KAKAO_SDK_KEY: ${{ secrets.VITE_KAKAO_SDK_KEY }}
+                  VITE_KAKAO_CLIENT_ID: ${{ secrets.VITE_KAKAO_CLIENT_ID }}
 
             # - name: Configure AWS credentials for develop-v1
             #   if: github.ref == 'refs/heads/develop-v1'

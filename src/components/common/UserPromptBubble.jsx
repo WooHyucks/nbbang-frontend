@@ -22,7 +22,7 @@ const UserPromptBubble = ({ userPrompt }) => {
                 <div className="relative bg-[#3182F6] text-white rounded-2xl rounded-tr-sm px-4 py-3 shadow-sm">
                     {/* 말풍선 꼬리표 (오른쪽) */}
                     <div className="absolute right-0 top-0 w-0 h-0 border-l-[8px] border-l-transparent border-t-[8px] border-t-[#3182F6] transform translate-x-[8px] -translate-y-[8px]" />
-                    
+
                     {/* 텍스트 내용 */}
                     <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap break-words">
                         {userPrompt}
@@ -34,5 +34,3 @@ const UserPromptBubble = ({ userPrompt }) => {
 };
 
 export default UserPromptBubble;
-
-

@@ -4,11 +4,21 @@ import MessageList from './MessageList';
 import InputArea from './InputArea';
 import { transformToWebp } from '../../utils/transformToWebp';
 import { analyzeAndCreateMeeting } from '../../api/ai';
-import { getAiMeetingById, modifyMeetingByAi, getUserData } from '../../api/api';
+import {
+    getAiMeetingById,
+    modifyMeetingByAi,
+    getUserData,
+} from '../../api/api';
 import { sendEventToAmplitude } from '@/utils/amplitude';
 import AiAnalysisLimitModal from '../Modal/AiAnalysisLimitModal';
 
-const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserUpdate }) => {
+const ChatContainer = ({
+    userName,
+    meetingId,
+    onSettlementCreated,
+    user,
+    onUserUpdate,
+}) => {
     const [messages, setMessages] = useState([]);
     const [inputValue, setInputValue] = useState('');
     const [isLoading, setIsLoading] = useState(false);
@@ -52,11 +62,11 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                 // 유저 데이터와 미팅 데이터를 동시에 불러오기 (Promise.all)
                 const [meetingResponse, userResponse] = await Promise.all([
                     getAiMeetingById(meetingId),
-                    getUserData('user').catch(() => null) // 유저 데이터가 없어도 계속 진행
+                    getUserData('user').catch(() => null), // 유저 데이터가 없어도 계속 진행
                 ]);
 
                 const meetingData = meetingResponse;
-                
+
                 // 유저 데이터가 있으면 업데이트
                 if (userResponse && onUserUpdate) {
                     let userData = userResponse.data;
@@ -67,28 +77,29 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                     }
                     onUserUpdate();
                 }
-                
+
                 // 메시지 배열 초기화
                 const newMessages = [];
 
                 // 모든 payments의 데이터 수집
                 const payments = meetingData?.payments || [];
-                
+
                 // 모든 payments에서 이미지 수집
                 const allImages = payments.flatMap((p) => p.images || []);
                 const imageUrls = allImages.map((img) => img.url || img);
-                
+
                 // 모든 payments에서 paymentItems 수집
-                const allPaymentItems = payments.flatMap((p) => 
+                const allPaymentItems = payments.flatMap((p) =>
                     (p.paymentItems || []).map((item) => ({
                         ...item,
                         // 각 payment의 payer 정보를 item에 추가
                         payer: item.payer || p.payer || p.paid_by || null,
-                    }))
+                    })),
                 );
 
                 // 1. 사용자 메시지: userPrompt (텍스트) - 있으면 먼저 표시
-                const userPrompt = meetingData?.userPrompt || meetingData?.prompt;
+                const userPrompt =
+                    meetingData?.userPrompt || meetingData?.prompt;
                 if (userPrompt && userPrompt.trim()) {
                     newMessages.push({
                         id: 'user-prompt',
@@ -136,14 +147,20 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                     date: meetingData?.date || '',
                     members: [
                         ...new Set(
-                            allPaymentItems.flatMap((item) => item.attendees || [])
+                            allPaymentItems.flatMap(
+                                (item) => item.attendees || [],
+                            ),
                         ),
                     ],
                     items: allPaymentItems.map((item) => ({
                         name: item.name || '항목',
                         price: (item.price || 0) * (item.quantity || 1),
                         attendees: item.attendees || [],
-                        payer: item.payer || item.pay_member || item.paid_by || null,
+                        payer:
+                            item.payer ||
+                            item.pay_member ||
+                            item.paid_by ||
+                            null,
                     })),
                 };
 
@@ -161,16 +178,18 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                 setMessages(newMessages);
             } catch (error) {
                 console.error('AI 정산 내역 로드 실패:', error);
-                setMessages([{
-                    id: 'error',
-                    sender: 'ai',
-                    type: 'text',
-                    text: '정산 내역을 불러오는데 실패했습니다.',
-                    timestamp: new Date().toLocaleTimeString('ko-KR', {
-                        hour: '2-digit',
-                        minute: '2-digit',
-                    }),
-                }]);
+                setMessages([
+                    {
+                        id: 'error',
+                        sender: 'ai',
+                        type: 'text',
+                        text: '정산 내역을 불러오는데 실패했습니다.',
+                        timestamp: new Date().toLocaleTimeString('ko-KR', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                        }),
+                    },
+                ]);
             } finally {
                 setIsLoading(false);
             }
@@ -184,13 +203,13 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
         // isLoading이 true일 때는 스무스하게 최하단 스크롤
         if (isLoading) {
             setTimeout(() => {
-            smoothScrollToBottom();
+                smoothScrollToBottom();
             }, 100);
         } else {
             requestAnimationFrame(scrollToBottom);
         }
     }, [messages, isLoading]);
-    
+
     const handleSendMessage = async (text, files = []) => {
         // 텍스트와 파일이 모두 없으면 리턴
         const promptText = text.trim();
@@ -199,15 +218,15 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
         // 수정 모드가 아닐 때만 유효성 검사 (생성 모드)
         const isModifyMode = !!meetingId;
         if (!isModifyMode) {
-        // 유효성 검사: "총무" 또는 "명" 중 하나라도 포함되어야 함
-        const hasLeader = promptText.includes('총무');
-        const isSimpleSplit = promptText.includes('명'); // 예: 3명, 다섯명 등
-        if (!hasLeader && !isSimpleSplit) {
-            setValidationMessage(
-                "누가 돈을 받아야 하나요? 이름 뒤에 '(총무)'를 붙여주세요!\n(예: 우혁(총무))\n\n💡 단순 N빵은 인원수만 적어도 돼요! (예: 3명이서 나눠줘)"
-            );
-            setShowValidationModal(true);
-            return;
+            // 유효성 검사: "총무" 또는 "명" 중 하나라도 포함되어야 함
+            const hasLeader = promptText.includes('총무');
+            const isSimpleSplit = promptText.includes('명'); // 예: 3명, 다섯명 등
+            if (!hasLeader && !isSimpleSplit) {
+                setValidationMessage(
+                    "누가 돈을 받아야 하나요? 이름 뒤에 '(총무)'를 붙여주세요!\n(예: 우혁(총무))\n\n💡 단순 N빵은 인원수만 적어도 돼요! (예: 3명이서 나눠줘)",
+                );
+                setShowValidationModal(true);
+                return;
             }
         }
 
@@ -256,17 +275,17 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
             }, 100);
             try {
                 let webpFiles = [];
-                
+
                 // 이미지가 있으면 WebP로 변환
                 if (files && files.length > 0) {
                     webpFiles = await Promise.all(
-                        files.map((file) => transformToWebp(file))
+                        files.map((file) => transformToWebp(file)),
                     );
                 }
 
                 // FormData 생성
                 const formData = new FormData();
-                
+
                 // 이미지 파일들을 FormData에 추가
                 if (webpFiles && webpFiles.length > 0) {
                     webpFiles.forEach((file) => {
@@ -277,12 +296,16 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                 // meetingId가 있으면 수정 모드, 없으면 생성 모드
                 if (meetingId) {
                     // 수정 모드: modifyMeetingByAi 호출
-                    const prompt = promptText || (files && files.length > 0 ? '이미지를 분석해주세요' : '');
+                    const prompt =
+                        promptText ||
+                        (files && files.length > 0
+                            ? '이미지를 분석해주세요'
+                            : '');
                     await modifyMeetingByAi(meetingId, prompt);
-                    
+
                     // 정산 다시 로드하여 최신 데이터 가져오기
                     const updatedMeeting = await getAiMeetingById(meetingId);
-                    
+
                     // 사용자 메시지: 수정 요청 텍스트 (prompt가 있으면)
                     if (prompt && prompt.trim()) {
                         const userTextMessage = {
@@ -297,22 +320,22 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                         };
                         setMessages((prev) => [...prev, userTextMessage]);
                     }
-                    
+
                     // AI 응답 메시지 추가
                     // 모든 payments의 데이터 수집
                     const payments = updatedMeeting?.payments || [];
-                    
+
                     // 모든 payments에서 이미지 수집
                     const allImages = payments.flatMap((p) => p.images || []);
                     const imageUrls = allImages.map((img) => img.url || img);
-                    
+
                     // 모든 payments에서 paymentItems 수집
-                    const allPaymentItems = payments.flatMap((p) => 
+                    const allPaymentItems = payments.flatMap((p) =>
                         (p.paymentItems || []).map((item) => ({
                             ...item,
                             // 각 payment의 payer 정보를 item에 추가
                             payer: item.payer || p.payer || p.paid_by || null,
-                        }))
+                        })),
                     );
 
                     const aiData = {
@@ -320,14 +343,20 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                         date: updatedMeeting?.date || '',
                         members: [
                             ...new Set(
-                                allPaymentItems.flatMap((item) => item.attendees || [])
+                                allPaymentItems.flatMap(
+                                    (item) => item.attendees || [],
+                                ),
                             ),
                         ],
                         items: allPaymentItems.map((item) => ({
                             name: item.name || '항목',
                             price: (item.price || 0) * (item.quantity || 1),
                             attendees: item.attendees || [],
-                            payer: item.payer || item.pay_member || item.paid_by || null,
+                            payer:
+                                item.payer ||
+                                item.pay_member ||
+                                item.paid_by ||
+                                null,
                         })),
                     };
 
@@ -353,7 +382,11 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                         meetingId: meetingId, // meetingId 전달
                     };
 
-                    setMessages((prev) => [...prev, aiTextMessage, aiCardMessage]);
+                    setMessages((prev) => [
+                        ...prev,
+                        aiTextMessage,
+                        aiCardMessage,
+                    ]);
 
                     // Amplitude 이벤트
                     sendEventToAmplitude('modify ai settlement', {
@@ -414,7 +447,9 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                         }
                     } else {
                         console.error('정산 생성 응답 구조:', result);
-                        throw new Error('정산 생성 응답에 meeting 객체가 없습니다.');
+                        throw new Error(
+                            '정산 생성 응답에 meeting 객체가 없습니다.',
+                        );
                     }
                 }
             } catch (error) {
@@ -425,23 +460,26 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                     data: error?.response?.data,
                     message: error?.message,
                 });
-                
+
                 // 에러 코드별 처리
                 const errorStatus = error?.response?.status || error?.status;
                 const errorData = error?.response?.data || error?.data || {};
-                const errorMessage = errorData?.detail || errorData?.message || error?.message || '';
+                const errorMessage =
+                    errorData?.detail ||
+                    errorData?.message ||
+                    error?.message ||
+                    '';
                 const hasImages = files && files.length > 0;
 
                 // 403 Forbidden: 개인 한도 초과
                 // 또는 에러 메시지에 "5회", "한도", "횟수" 등의 키워드가 포함된 경우
-                const isPersonalLimitError = 
+                const isPersonalLimitError =
                     (errorStatus === 403 && hasImages) ||
-                    (hasImages && (
-                        errorMessage.includes('5회') ||
-                        errorMessage.includes('한도') ||
-                        errorMessage.includes('횟수') ||
-                        errorMessage.includes('이미지 분석')
-                    ));
+                    (hasImages &&
+                        (errorMessage.includes('5회') ||
+                            errorMessage.includes('한도') ||
+                            errorMessage.includes('횟수') ||
+                            errorMessage.includes('이미지 분석')));
 
                 if (isPersonalLimitError) {
                     console.log('🚨 개인 한도 초과 - 설문 모달 표시', {
@@ -492,7 +530,10 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
             const textarea = document.querySelector('textarea');
             if (textarea) {
                 textarea.focus();
-                textarea.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                textarea.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                });
             }
         }, 100);
     };
@@ -519,12 +560,14 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
         {
             title: '결제자가 다를 때',
             desc: '2차에서는 영희가 결제 했어',
-            fullText: '철수(총무), 영희, 길동 먹었는데 2차에서는 영희가 결제 했어.',
+            fullText:
+                '철수(총무), 영희, 길동 먹었는데 2차에서는 영희가 결제 했어.',
         },
         {
             title: '특정 항목 제외',
             desc: '길동이는 술 안 마심',
-            fullText: '철수 (총무), 영희, 길동이랑 먹었는데 길동이는 술을 안 마셨으니까 주류비는 빼고 계산해줘.',
+            fullText:
+                '철수 (총무), 영희, 길동이랑 먹었는데 길동이는 술을 안 마셨으니까 주류비는 빼고 계산해줘.',
         },
         {
             title: '단순 N빵',
@@ -539,21 +582,21 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
     // 날짜가 바뀌었는지 확인하여 카운트 갱신
     const lastAiUsageDate = user?.lastAiUsageDate || user?.last_ai_usage_date;
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 형식
-    
+
     // 날짜가 다르면 카운트를 0으로 처리 (하루가 지났으므로)
     const isDateChanged = lastAiUsageDate && lastAiUsageDate !== today;
-    const rawDailyImageAnalysisCount = 
-        user?.dailyImageAnalysisCount ?? 
-        user?.daily_image_analysis_count ?? 
-        0;
-    
+    const rawDailyImageAnalysisCount =
+        user?.dailyImageAnalysisCount ?? user?.daily_image_analysis_count ?? 0;
+
     // 날짜가 바뀌었으면 카운트를 0으로, 아니면 백엔드에서 받은 값 사용
-    const dailyImageAnalysisCount = isDateChanged ? 0 : rawDailyImageAnalysisCount;
-    
+    const dailyImageAnalysisCount = isDateChanged
+        ? 0
+        : rawDailyImageAnalysisCount;
+
     const maxDailyLimit = 5;
     const remainingCount = Math.max(0, maxDailyLimit - dailyImageAnalysisCount);
     const isLimitReached = dailyImageAnalysisCount >= maxDailyLimit;
-    
+
     // 디버깅: 사용량 정보 확인
     useEffect(() => {
         if (user) {
@@ -567,12 +610,24 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                 isLimitReached,
             });
         }
-    }, [user, lastAiUsageDate, today, isDateChanged, rawDailyImageAnalysisCount, dailyImageAnalysisCount, remainingCount, isLimitReached]);
+    }, [
+        user,
+        lastAiUsageDate,
+        today,
+        isDateChanged,
+        rawDailyImageAnalysisCount,
+        dailyImageAnalysisCount,
+        remainingCount,
+        isLimitReached,
+    ]);
 
     return (
         <div className="flex flex-col h-full bg-white">
             {/* 메시지 리스트 영역 (Gemini 스타일: 중앙 정렬) */}
-            <div ref={messagesContainerRef} className="flex-1 overflow-y-auto w-full relative pt-[60px] md:pt-0 pb-[200px] md:pb-0">
+            <div
+                ref={messagesContainerRef}
+                className="flex-1 overflow-y-auto w-full relative pt-[60px] md:pt-0 pb-[200px] md:pb-0"
+            >
                 {/* 로딩 오버레이 (흰 배경 + 상단 게이지바) - meetingId가 있고 로딩 중일 때 표시 */}
                 {isLoading && meetingId && (
                     <>
@@ -587,11 +642,12 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                         <div className="absolute inset-0 bg-white z-30 flex flex-col">
                             {/* 상단 게이지바 - 왼쪽에서 오른쪽으로 진행 (모바일에서도 보이도록 fixed로 상단 고정) */}
                             <div className="fixed top-0 left-0 right-0 h-1 bg-gray-100 z-50 overflow-hidden">
-                                <div 
+                                <div
                                     className="h-full bg-[#3182F6] transition-all duration-500 ease-out"
-                                    style={{ 
+                                    style={{
                                         width: '100%',
-                                        animation: 'loadingProgress 1.5s ease-out forwards',
+                                        animation:
+                                            'loadingProgress 1.5s ease-out forwards',
                                     }}
                                 />
                             </div>
@@ -609,7 +665,9 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                                     className="text-[#3182F6]"
                                 />
                                 <h2 className="text-2xl md:text-3xl font-semibold text-[#191F28]">
-                                    {userName ? `${userName}님, 안녕하세요!` : '게스트님, 안녕하세요!'}
+                                    {userName
+                                        ? `${userName}님, 안녕하세요!`
+                                        : '게스트님, 안녕하세요!'}
                                 </h2>
                             </div>
                             <p className="text-lg text-[#333D4B]">
@@ -631,25 +689,39 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                                                 : 'bg-blue-50 border-blue-100 md:hover:border-blue-300 md:hover:shadow-md active:border-blue-300'
                                         }`}
                                     >
-                                        <div className={`p-2 rounded-xl transition-colors ${
-                                            isLimitReached
-                                                ? 'bg-gray-100'
-                                                : 'bg-white md:group-hover:bg-blue-100'
-                                        }`}>
+                                        <div
+                                            className={`p-2 rounded-xl transition-colors ${
+                                                isLimitReached
+                                                    ? 'bg-gray-100'
+                                                    : 'bg-white md:group-hover:bg-blue-100'
+                                            }`}
+                                        >
                                             <Camera
                                                 size={18}
-                                                className={isLimitReached ? 'text-gray-400' : 'text-blue-600'}
+                                                className={
+                                                    isLimitReached
+                                                        ? 'text-gray-400'
+                                                        : 'text-blue-600'
+                                                }
                                             />
                                         </div>
                                         <div className="text-center">
-                                            <h3 className={`text-xs font-semibold mb-0.5 ${
-                                                isLimitReached ? 'text-gray-400' : 'text-blue-600'
-                                            }`}>
+                                            <h3
+                                                className={`text-xs font-semibold mb-0.5 ${
+                                                    isLimitReached
+                                                        ? 'text-gray-400'
+                                                        : 'text-blue-600'
+                                                }`}
+                                            >
                                                 영수증 · 결제내역
                                             </h3>
-                                            <p className={`text-[10px] font-medium ${
-                                                isLimitReached ? 'text-gray-400' : 'text-blue-500'
-                                            }`}>
+                                            <p
+                                                className={`text-[10px] font-medium ${
+                                                    isLimitReached
+                                                        ? 'text-gray-400'
+                                                        : 'text-blue-500'
+                                                }`}
+                                            >
                                                 찍기
                                             </p>
                                         </div>
@@ -664,36 +736,54 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                                                     : 'bg-blue-50 border-blue-100 md:hover:border-blue-300 md:hover:shadow-md active:border-blue-300'
                                             }`}
                                         >
-                                            <div className={`p-2 rounded-xl transition-colors ${
-                                                isLimitReached
-                                                    ? 'bg-gray-100'
-                                                    : 'bg-white md:group-hover:bg-blue-100'
-                                            }`}>
+                                            <div
+                                                className={`p-2 rounded-xl transition-colors ${
+                                                    isLimitReached
+                                                        ? 'bg-gray-100'
+                                                        : 'bg-white md:group-hover:bg-blue-100'
+                                                }`}
+                                            >
                                                 <Receipt
                                                     size={18}
-                                                    className={isLimitReached ? 'text-gray-400' : 'text-blue-600'}
+                                                    className={
+                                                        isLimitReached
+                                                            ? 'text-gray-400'
+                                                            : 'text-blue-600'
+                                                    }
                                                 />
                                             </div>
                                             <div className="text-center">
-                                                <h3 className={`text-xs font-semibold mb-0.5 ${
-                                                    isLimitReached ? 'text-gray-400' : 'text-blue-600'
-                                                }`}>
+                                                <h3
+                                                    className={`text-xs font-semibold mb-0.5 ${
+                                                        isLimitReached
+                                                            ? 'text-gray-400'
+                                                            : 'text-blue-600'
+                                                    }`}
+                                                >
                                                     영수증 · 결제내역
                                                 </h3>
-                                                <p className={`text-[10px] font-medium ${
-                                                    isLimitReached ? 'text-gray-400' : 'text-blue-500'
-                                                }`}>
+                                                <p
+                                                    className={`text-[10px] font-medium ${
+                                                        isLimitReached
+                                                            ? 'text-gray-400'
+                                                            : 'text-blue-500'
+                                                    }`}
+                                                >
                                                     올리기
                                                 </p>
                                             </div>
                                         </button>
                                     </div>
                                 </div>
-                                <p className={`text-xs text-center ${
-                                    isLimitReached ? 'text-gray-400' : 'text-blue-500'
-                                }`}>
-                                    {isLimitReached 
-                                        ? '오늘 이미지 분석 횟수를 모두 사용했습니다' 
+                                <p
+                                    className={`text-xs text-center ${
+                                        isLimitReached
+                                            ? 'text-gray-400'
+                                            : 'text-blue-500'
+                                    }`}
+                                >
+                                    {isLimitReached
+                                        ? '오늘 이미지 분석 횟수를 모두 사용했습니다'
                                         : '이미지를 올리면 AI가 자동으로 분석해요'}
                                 </p>
                                 {/* AI 정산 설문 후킹 (횟수 다 썼을 때) */}
@@ -704,7 +794,10 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                                         </p>
                                         <button
                                             onClick={() => {
-                                                sendEventToAmplitude('click ai settlement survey from limit', {});
+                                                sendEventToAmplitude(
+                                                    'click ai settlement survey from limit',
+                                                    {},
+                                                );
                                                 setShowSurveyModal(true);
                                             }}
                                             className="w-full px-4 py-2 bg-[#3182F6] text-white rounded-lg text-sm font-semibold hover:bg-[#1E6FFF] transition-colors active:scale-95"
@@ -715,35 +808,53 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                                 )}
                                 {/* 남은 횟수 표시 */}
                                 {user && !isLimitReached && (
-                                    <div className={`mt-2 px-3 py-1.5 rounded-lg border text-xs ${
-                                        remainingCount <= 3
-                                            ? 'bg-orange-50 border-orange-200'
-                                            : 'bg-blue-50 border-blue-200'
-                                    }`}>
+                                    <div
+                                        className={`mt-2 px-3 py-1.5 rounded-lg border text-xs ${
+                                            remainingCount <= 3
+                                                ? 'bg-orange-50 border-orange-200'
+                                                : 'bg-blue-50 border-blue-200'
+                                        }`}
+                                    >
                                         <div className="flex items-center justify-center gap-1.5">
-                                            <div className={`w-1.5 h-1.5 rounded-full ${
-                                                remainingCount <= 3 ? 'bg-orange-500' : 'bg-blue-500'
-                                            }`} />
-                                            <span className={`font-medium ${
-                                                remainingCount <= 3 ? 'text-orange-700' : 'text-blue-700'
-                                            }`}>
+                                            <div
+                                                className={`w-1.5 h-1.5 rounded-full ${
+                                                    remainingCount <= 3
+                                                        ? 'bg-orange-500'
+                                                        : 'bg-blue-500'
+                                                }`}
+                                            />
+                                            <span
+                                                className={`font-medium ${
+                                                    remainingCount <= 3
+                                                        ? 'text-orange-700'
+                                                        : 'text-blue-700'
+                                                }`}
+                                            >
                                                 오늘 남은 이미지 분석 횟수
                                             </span>
-                                            <span className={`font-bold ${
-                                                remainingCount <= 3 ? 'text-orange-600' : 'text-blue-600'
-                                            }`}>
+                                            <span
+                                                className={`font-bold ${
+                                                    remainingCount <= 3
+                                                        ? 'text-orange-600'
+                                                        : 'text-blue-600'
+                                                }`}
+                                            >
                                                 {remainingCount}
                                             </span>
-                                            <span className={`font-medium ${
-                                                remainingCount <= 3 ? 'text-orange-500' : 'text-blue-500'
-                                            }`}>
+                                            <span
+                                                className={`font-medium ${
+                                                    remainingCount <= 3
+                                                        ? 'text-orange-500'
+                                                        : 'text-blue-500'
+                                                }`}
+                                            >
                                                 / {maxDailyLimit}회
                                             </span>
                                         </div>
                                     </div>
                                 )}
                             </div>
-                            
+
                             {/* 데스크탑: 올리기만 */}
                             <div className="hidden md:block relative">
                                 <button
@@ -755,54 +866,86 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                                             : 'bg-blue-50 border-blue-100 md:hover:border-blue-300 md:hover:shadow-md active:border-blue-300'
                                     }`}
                                 >
-                                    <div className={`p-3 rounded-2xl transition-colors ${
-                                        isLimitReached
-                                            ? 'bg-gray-100'
-                                            : 'bg-white md:group-hover:bg-blue-100'
-                                    }`}>
+                                    <div
+                                        className={`p-3 rounded-2xl transition-colors ${
+                                            isLimitReached
+                                                ? 'bg-gray-100'
+                                                : 'bg-white md:group-hover:bg-blue-100'
+                                        }`}
+                                    >
                                         <Receipt
                                             size={24}
-                                            className={isLimitReached ? 'text-gray-400' : 'text-blue-600'}
+                                            className={
+                                                isLimitReached
+                                                    ? 'text-gray-400'
+                                                    : 'text-blue-600'
+                                            }
                                         />
                                     </div>
                                     <div className="flex-1 text-left">
                                         <div className="flex items-center gap-2">
-                                            <h3 className={`text-lg font-semibold mb-1 ${
-                                                isLimitReached ? 'text-gray-400' : 'text-blue-600'
-                                            }`}>
+                                            <h3
+                                                className={`text-lg font-semibold mb-1 ${
+                                                    isLimitReached
+                                                        ? 'text-gray-400'
+                                                        : 'text-blue-600'
+                                                }`}
+                                            >
                                                 영수증 · 결제내역 올리기
                                             </h3>
                                         </div>
-                                        <p className={`text-sm ${
-                                            isLimitReached ? 'text-gray-400' : 'text-blue-500'
-                                        }`}>
-                                            {isLimitReached 
-                                                ? '오늘 이미지 분석 횟수를 모두 사용했습니다' 
+                                        <p
+                                            className={`text-sm ${
+                                                isLimitReached
+                                                    ? 'text-gray-400'
+                                                    : 'text-blue-500'
+                                            }`}
+                                        >
+                                            {isLimitReached
+                                                ? '오늘 이미지 분석 횟수를 모두 사용했습니다'
                                                 : '이미지를 올리면 AI가 자동으로 분석해요'}
                                         </p>
                                         {/* 남은 횟수 표시 */}
                                         {user && !isLimitReached && (
-                                            <div className={`mt-2 px-3 py-1.5 rounded-lg border text-xs inline-flex items-center gap-1.5 ${
-                                                remainingCount <= 3
-                                                    ? 'bg-orange-50 border-orange-200'
-                                                    : 'bg-blue-50 border-blue-200'
-                                            }`}>
-                                                <div className={`w-1.5 h-1.5 rounded-full ${
-                                                    remainingCount <= 3 ? 'bg-orange-500' : 'bg-blue-500'
-                                                }`} />
-                                                <span className={`font-medium ${
-                                                    remainingCount <= 3 ? 'text-orange-700' : 'text-blue-700'
-                                                }`}>
+                                            <div
+                                                className={`mt-2 px-3 py-1.5 rounded-lg border text-xs inline-flex items-center gap-1.5 ${
+                                                    remainingCount <= 3
+                                                        ? 'bg-orange-50 border-orange-200'
+                                                        : 'bg-blue-50 border-blue-200'
+                                                }`}
+                                            >
+                                                <div
+                                                    className={`w-1.5 h-1.5 rounded-full ${
+                                                        remainingCount <= 3
+                                                            ? 'bg-orange-500'
+                                                            : 'bg-blue-500'
+                                                    }`}
+                                                />
+                                                <span
+                                                    className={`font-medium ${
+                                                        remainingCount <= 3
+                                                            ? 'text-orange-700'
+                                                            : 'text-blue-700'
+                                                    }`}
+                                                >
                                                     오늘 남은 이미지 분석 횟수
                                                 </span>
-                                                <span className={`font-bold ${
-                                                    remainingCount <= 3 ? 'text-orange-600' : 'text-blue-600'
-                                                }`}>
+                                                <span
+                                                    className={`font-bold ${
+                                                        remainingCount <= 3
+                                                            ? 'text-orange-600'
+                                                            : 'text-blue-600'
+                                                    }`}
+                                                >
                                                     {remainingCount}
                                                 </span>
-                                                <span className={`font-medium ${
-                                                    remainingCount <= 3 ? 'text-orange-500' : 'text-blue-500'
-                                                }`}>
+                                                <span
+                                                    className={`font-medium ${
+                                                        remainingCount <= 3
+                                                            ? 'text-orange-500'
+                                                            : 'text-blue-500'
+                                                    }`}
+                                                >
                                                     / {maxDailyLimit}회
                                                 </span>
                                             </div>
@@ -810,7 +953,11 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                                     </div>
                                     <Receipt
                                         size={20}
-                                        className={isLimitReached ? 'text-gray-400 opacity-60' : 'text-blue-600 opacity-60'}
+                                        className={
+                                            isLimitReached
+                                                ? 'text-gray-400 opacity-60'
+                                                : 'text-blue-600 opacity-60'
+                                        }
                                     />
                                 </button>
                                 {/* AI 정산 설문 후킹 (횟수 다 썼을 때) - 부모 버튼 밖으로 분리 */}
@@ -822,7 +969,10 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                                         <button
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                sendEventToAmplitude('click ai settlement survey from limit', {});
+                                                sendEventToAmplitude(
+                                                    'click ai settlement survey from limit',
+                                                    {},
+                                                );
                                                 setShowSurveyModal(true);
                                             }}
                                             className="w-full px-4 py-2 bg-[#3182F6] text-white rounded-lg text-sm font-semibold hover:bg-[#1E6FFF] transition-colors active:scale-95"
@@ -839,13 +989,15 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                             <p className="text-sm text-[#8B95A1] mb-4 text-center">
                                 이렇게 물어보세요 👇
                             </p>
-                            
+
                             {/* 가이드 카드 그리드 */}
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                                 {GUIDE_PROMPTS.map((prompt, index) => (
                                     <button
                                         key={index}
-                                        onClick={() => handleGuideClick(prompt.fullText)}
+                                        onClick={() =>
+                                            handleGuideClick(prompt.fullText)
+                                        }
                                         className="p-4 bg-white border border-[#E5E8EB] rounded-xl shadow-sm md:hover:border-blue-300 md:hover:shadow-md transition-all active:scale-[0.98] active:border-blue-300 text-left group touch-manipulation"
                                     >
                                         <h4 className="text-sm font-semibold text-[#191F28] mb-1">
@@ -861,10 +1013,10 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                     </div>
                 ) : (
                     <div className="w-full max-w-3xl mx-auto px-4 md:px-6 lg:px-8 pt-6 pb-8">
-                        <MessageList 
-                            messages={messages} 
-                            isLoading={isLoading} 
-                            user={user} 
+                        <MessageList
+                            messages={messages}
+                            isLoading={isLoading}
+                            user={user}
                             onUserUpdate={onUserUpdate}
                             isModifyMode={!!meetingId}
                         />
@@ -932,7 +1084,7 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                     // 모달만 닫으면 됨
                 }}
             />
-            
+
             {/* AI 정산 설문 모달 */}
             <AiAnalysisLimitModal
                 isOpen={showSurveyModal}
@@ -948,10 +1100,8 @@ const ChatContainer = ({ userName, meetingId, onSettlementCreated, user, onUserU
                     }, 100);
                 }}
             />
-            
         </div>
     );
 };
 
 export default ChatContainer;
-

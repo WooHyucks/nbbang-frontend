@@ -26,7 +26,9 @@ const SummaryCard = ({ data }) => {
                 {/* 총액 */}
                 <div className="mb-4 pb-4 border-b border-gray-100">
                     <div className="flex items-baseline gap-2">
-                        <span className="text-sm text-gray-600">총 정산 금액</span>
+                        <span className="text-sm text-gray-600">
+                            총 정산 금액
+                        </span>
                         <span className="text-2xl font-bold text-gray-900">
                             {formatNumber(data.total)}원
                         </span>
@@ -56,4 +58,3 @@ const SummaryCard = ({ data }) => {
 };
 
 export default SummaryCard;
-

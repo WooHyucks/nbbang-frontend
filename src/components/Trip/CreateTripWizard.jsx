@@ -63,7 +63,7 @@ const CreateTripWizard = ({
         setMembers([...members, newMember]);
         setNewMemberName('');
         setError('');
-        
+
         if (!showIndividualAmounts && perPersonAmount) {
             setMemberContributions({
                 ...memberContributions,
@@ -83,7 +83,7 @@ const CreateTripWizard = ({
         delete newContributions[name];
         setMemberContributions(newContributions);
     };
-    
+
     const handleContributionChange = (memberName, amount) => {
         const numAmount = amount.replace(/[^0-9]/g, '');
         setMemberContributions({
@@ -91,7 +91,7 @@ const CreateTripWizard = ({
             [memberName]: numAmount,
         });
     };
-    
+
     useEffect(() => {
         if (!showIndividualAmounts && perPersonAmount && members.length > 0) {
             const newContributions = {};
@@ -101,7 +101,7 @@ const CreateTripWizard = ({
             setMemberContributions(newContributions);
         }
     }, [perPersonAmount, members.length, showIndividualAmounts]);
-    
+
     useEffect(() => {
         if (showIndividualAmounts) {
             const total = Object.values(memberContributions).reduce(
@@ -183,10 +183,12 @@ const CreateTripWizard = ({
             setError('최소 1명의 멤버가 필요합니다.');
             return;
         }
-        
+
         if (showIndividualAmounts) {
             const hasEmptyAmount = members.some(
-                (member) => !memberContributions[member] || Number(memberContributions[member]) <= 0
+                (member) =>
+                    !memberContributions[member] ||
+                    Number(memberContributions[member]) <= 0,
             );
             if (hasEmptyAmount) {
                 setError('모든 멤버의 공금 금액을 입력해주세요.');
@@ -214,7 +216,9 @@ const CreateTripWizard = ({
             const payload = {
                 country_code: selectedCountry,
                 contributions,
-                ...(shouldSkipStep3 ? {} : { total_foreign: Number(totalForeign) }),
+                ...(shouldSkipStep3
+                    ? {}
+                    : { total_foreign: Number(totalForeign) }),
                 ...(advancePayments.length > 0
                     ? { advance_payments: advancePayments }
                     : {}),
@@ -252,7 +256,9 @@ const CreateTripWizard = ({
             }
         } catch (err) {
             console.error('여행 생성 실패:', err);
-            setError(err.response?.data?.message || '여행 생성에 실패했습니다.');
+            setError(
+                err.response?.data?.message || '여행 생성에 실패했습니다.',
+            );
         } finally {
             setIsLoading(false);
         }
@@ -354,7 +360,8 @@ const CreateTripWizard = ({
                                 {members.length === 0 && (
                                     <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                                         <p className="text-sm text-blue-700 font-medium text-center">
-                                            💡 처음 추가하시는 멤버가 총무로 자동 설정됩니다
+                                            💡 처음 추가하시는 멤버가 총무로
+                                            자동 설정됩니다
                                         </p>
                                     </div>
                                 )}
@@ -398,13 +405,23 @@ const CreateTripWizard = ({
                                                     setShowIndividualAmounts(
                                                         !showIndividualAmounts,
                                                     );
-                                                    if (!showIndividualAmounts) {
+                                                    if (
+                                                        !showIndividualAmounts
+                                                    ) {
                                                         if (perPersonAmount) {
-                                                            const newContributions = {};
-                                                            members.forEach((member) => {
-                                                                newContributions[member] = perPersonAmount;
-                                                            });
-                                                            setMemberContributions(newContributions);
+                                                            const newContributions =
+                                                                {};
+                                                            members.forEach(
+                                                                (member) => {
+                                                                    newContributions[
+                                                                        member
+                                                                    ] =
+                                                                        perPersonAmount;
+                                                                },
+                                                            );
+                                                            setMemberContributions(
+                                                                newContributions,
+                                                            );
                                                         }
                                                     }
                                                 }}
@@ -422,19 +439,23 @@ const CreateTripWizard = ({
                                                 key={index}
                                                 className="group relative flex items-center gap-3 p-4 bg-white rounded-xl border-2 border-gray-100 hover:border-blue-300 transition-all duration-200 shadow-sm hover:shadow-md"
                                             >
-                                                <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
-                                                    index === 0 
-                                                        ? 'bg-gradient-to-br from-yellow-400 to-yellow-500' 
-                                                        : 'bg-gradient-to-br from-blue-400 to-indigo-500'
-                                                }`}>
-                                                    {index === 0 ? '👑' : index + 1}
+                                                <div
+                                                    className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                                                        index === 0
+                                                            ? 'bg-gradient-to-br from-yellow-400 to-yellow-500'
+                                                            : 'bg-gradient-to-br from-blue-400 to-indigo-500'
+                                                    }`}
+                                                >
+                                                    {index === 0
+                                                        ? '👑'
+                                                        : index + 1}
                                                 </div>
                                                 <div className="flex-1 min-w-0">
                                                     <div className="flex items-center justify-between mb-2">
                                                         <div className="flex items-center gap-2">
-                                                        <span className="text-base font-semibold text-gray-900 truncate">
-                                                            {name}
-                                                        </span>
+                                                            <span className="text-base font-semibold text-gray-900 truncate">
+                                                                {name}
+                                                            </span>
                                                             {index === 0 && (
                                                                 <span className="px-2 py-0.5 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded-full">
                                                                     총무
@@ -460,16 +481,21 @@ const CreateTripWizard = ({
                                                             <input
                                                                 type="text"
                                                                 value={
-                                                                    memberContributions[name]
+                                                                    memberContributions[
+                                                                        name
+                                                                    ]
                                                                         ? formatNumber(
-                                                                              memberContributions[name],
+                                                                              memberContributions[
+                                                                                  name
+                                                                              ],
                                                                           )
                                                                         : ''
                                                                 }
                                                                 onChange={(e) =>
                                                                     handleContributionChange(
                                                                         name,
-                                                                        e.target.value,
+                                                                        e.target
+                                                                            .value,
                                                                     )
                                                                 }
                                                                 placeholder="금액 입력"
@@ -503,10 +529,11 @@ const CreateTripWizard = ({
                                                 : ''
                                         }
                                         onChange={(e) => {
-                                            const value = e.target.value.replace(
-                                                /[^0-9]/g,
-                                                '',
-                                            );
+                                            const value =
+                                                e.target.value.replace(
+                                                    /[^0-9]/g,
+                                                    '',
+                                                );
                                             setPerPersonAmount(value);
                                         }}
                                         placeholder="예: 100,000"
@@ -526,7 +553,10 @@ const CreateTripWizard = ({
                                                     1인당 금액
                                                 </span>
                                                 <span className="text-gray-900 font-bold">
-                                                    {formatNumber(perPersonAmount)}원
+                                                    {formatNumber(
+                                                        perPersonAmount,
+                                                    )}
+                                                    원
                                                 </span>
                                             </div>
                                             {!isKR && (
@@ -536,8 +566,9 @@ const CreateTripWizard = ({
                                                     </span>
                                                     <span className="text-green-600 font-bold text-base">
                                                         {formatNumber(
-                                                            Number(perPersonAmount) *
-                                                                members.length,
+                                                            Number(
+                                                                perPersonAmount,
+                                                            ) * members.length,
                                                         )}
                                                         원
                                                     </span>
@@ -558,7 +589,8 @@ const CreateTripWizard = ({
                                                     ).reduce(
                                                         (sum, amount) =>
                                                             sum +
-                                                            (Number(amount) || 0),
+                                                            (Number(amount) ||
+                                                                0),
                                                         0,
                                                     ),
                                                 )}
@@ -740,9 +772,7 @@ const CreateTripWizard = ({
                                                         {members.map(
                                                             (member) => (
                                                                 <option
-                                                                    key={
-                                                                        member
-                                                                    }
+                                                                    key={member}
                                                                     value={
                                                                         member
                                                                     }
@@ -799,5 +829,3 @@ const CreateTripWizard = ({
 };
 
 export default CreateTripWizard;
-
-

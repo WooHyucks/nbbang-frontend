@@ -18,9 +18,7 @@ const AiSettlementView = ({ meetingData, isViewerMode = false }) => {
         meeting_name: meetingData?.name || 'AI 정산',
         date: meetingData?.date || '',
         members: [
-            ...new Set(
-                paymentItems.flatMap((item) => item.attendees || [])
-            ),
+            ...new Set(paymentItems.flatMap((item) => item.attendees || [])),
         ],
         items: paymentItems.map((item) => ({
             name: item.name || '항목',
@@ -64,7 +62,11 @@ const AiSettlementView = ({ meetingData, isViewerMode = false }) => {
             <div className="flex-1 overflow-y-auto px-4 py-6">
                 <div className="max-w-3xl mx-auto space-y-4">
                     {/* 사용자 요청사항 말풍선 */}
-                    <UserPromptBubble userPrompt={meetingData?.userPrompt || meetingData?.prompt} />
+                    <UserPromptBubble
+                        userPrompt={
+                            meetingData?.userPrompt || meetingData?.prompt
+                        }
+                    />
 
                     {/* AI 메시지: 정산 내역 안내 */}
                     <div className="flex items-start gap-3">
@@ -93,10 +95,8 @@ const AiSettlementView = ({ meetingData, isViewerMode = false }) => {
                     </div>
                 </div>
             </div>
-
         </div>
     );
 };
 
 export default AiSettlementView;
-

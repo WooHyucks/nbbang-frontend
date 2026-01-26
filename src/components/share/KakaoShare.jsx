@@ -36,8 +36,7 @@ const KakaoShare = ({ meetingName }) => {
         if (window.Kakao) {
             const kakao = window.Kakao;
             if (!kakao.isInitialized()) {
-                const kakaoSdkKey =
-                    import.meta.env.VITE_KAKAO_SDK_KEY 
+                const kakaoSdkKey = import.meta.env.VITE_KAKAO_SDK_KEY;
                 kakao.init(kakaoSdkKey);
             }
         }

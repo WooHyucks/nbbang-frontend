@@ -25,24 +25,23 @@ const MainPage = () => {
     const fetchData = async () => {
         try {
             const response = await getUserData('user');
-            
+
             // 백엔드 응답 구조에 따라 데이터 추출
             // 가능한 구조들:
             // 1. response.data가 직접 user 객체인 경우
             // 2. response.data.data가 user 객체인 경우
             // 3. response.data.user가 user 객체인 경우
             let userData = response.data;
-            
+
             // 중첩된 구조 처리
             if (userData?.data) {
                 userData = userData.data;
             } else if (userData?.user) {
                 userData = userData.user;
             }
-            
+
             // 디버깅: 전체 응답 구조 확인
-       
-            
+
             setUser(userData);
         } catch (error) {
             // 401 (Unauthorized)일 때만 토큰 제거
@@ -57,7 +56,7 @@ const MainPage = () => {
         try {
             // 회원 토큰 제거
             Cookies.remove('authToken', { path: '/' });
-            
+
             // 게스트 토큰 발급
             const response = await postGuestLogin();
             if (response.status === 201) {
@@ -69,15 +68,15 @@ const MainPage = () => {
                         sameSite: 'Strict',
                         secure: window.location.protocol === 'https:',
                     });
-                    
+
                     // Amplitude User ID 재설정
                     await AmplitudeSetUserId();
-                    
+
                     // 사용자 데이터 다시 가져오기 (게스트 정보)
                     await fetchData();
                 }
             }
-            
+
             sendEventToAmplitude('click logout', '');
         } catch (error) {
             console.error('게스트 로그인 실패:', error);
@@ -122,16 +121,17 @@ const MainPage = () => {
                                 size={20}
                                 className="text-[#3182F6] animate-pulse"
                             />
-                            <h1 className="text-lg font-bold text-[#191F28]">
-                                Nbbang AI
-                            </h1>
+                            <div className="text-xl font-bold tracking-tighter text-[#191F28]">
+                                NBBANG<span className="text-[#3182F6]">.</span>
+                            </div>{' '}
+                            AI
                         </div>
 
                         {/* 데스크탑 헤더 (채팅 제목 영역) */}
                         <div className="hidden md:flex items-center gap-3 flex-1">
-                            <h1 className="text-lg font-semibold text-[#191F28]">
-                            Nbbang
-                            </h1>
+                            <div className="text-xl font-bold tracking-tighter text-[#191F28]">
+                                NBBANG<span className="text-[#3182F6]">.</span>
+                            </div>
                         </div>
 
                         {/* 우측 액션 버튼들 */}
@@ -140,18 +140,23 @@ const MainPage = () => {
                             {user?.type === 'guest' && (
                                 <button
                                     onClick={() => {
-                                        sendEventToAmplitude('click login from guest header', '');
+                                        sendEventToAmplitude(
+                                            'click login from guest header',
+                                            '',
+                                        );
                                         navigate('/signd');
                                     }}
                                     className="flex items-center gap-2 px-4 py-2 bg-[#3182F6] hover:bg-[#1E6FFF] text-white rounded-lg transition-colors text-sm font-medium"
                                     aria-label="로그인하고 저장하기"
                                 >
                                     <LogIn size={16} />
-                                    <span className="hidden sm:inline">로그인하고 저장하기</span>
+                                    <span className="hidden sm:inline">
+                                        로그인하고 저장하기
+                                    </span>
                                     <span className="sm:hidden">로그인</span>
                                 </button>
                             )}
-                            
+
                             {/* 일반 사용자: 로그아웃 버튼 */}
                             {user?.type !== 'guest' && (
                                 <button
@@ -160,7 +165,9 @@ const MainPage = () => {
                                     aria-label="로그아웃"
                                 >
                                     <LogOut size={16} />
-                                    <span className="hidden sm:inline">로그아웃</span>
+                                    <span className="hidden sm:inline">
+                                        로그아웃
+                                    </span>
                                 </button>
                             )}
                         </div>
@@ -169,9 +176,9 @@ const MainPage = () => {
 
                 {/* 채팅 컨테이너 */}
                 <div className="flex-1 overflow-hidden bg-white">
-                    <ChatContainer 
+                    <ChatContainer
                         key={id || 'new'} // ID가 바뀌면 컴포넌트 리셋
-                        userName={user?.name} 
+                        userName={user?.name}
                         meetingId={id ? parseInt(id) : undefined}
                         user={user}
                         onUserUpdate={fetchData}

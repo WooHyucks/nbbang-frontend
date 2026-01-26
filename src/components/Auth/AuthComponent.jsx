@@ -167,7 +167,7 @@ const AuthComponent = ({
             animate="visible"
             exit="exit"
             variants={containerVariants}
-className="flex flex-col h-full bg-white max-w-[450px] mx-auto text-center"
+            className="flex flex-col h-full bg-white max-w-[450px] mx-auto text-center"
         >
             <NavBar>
                 <motion.div>

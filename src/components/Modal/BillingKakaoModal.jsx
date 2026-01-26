@@ -14,7 +14,8 @@ const BillingKakaoModal = ({ setKakaoModalOpen, meetingName, user }) => {
     const { meetingId: urlMeetingId } = useParams();
     const meetingId = urlMeetingId || meetingName?.id; // URL에서 가져오거나 meetingName에서 가져오기
     const [kakaoId, setKakaoId] = useState(
-        meetingName?.kakao_deposit_information?.kakao_deposit_id || user?.kakaoDepositInformation?.kakaoDepositId ||
+        meetingName?.kakao_deposit_information?.kakao_deposit_id ||
+            user?.kakaoDepositInformation?.kakaoDepositId ||
             meetingName?.kakaoDepositInformation?.kakaoDepositId ||
             '',
     );
@@ -70,14 +71,18 @@ const BillingKakaoModal = ({ setKakaoModalOpen, meetingName, user }) => {
             } else if (action === '계속해서 사용하기') {
                 await PatchBillingUserKaKaoDeposit(formData);
                 if (meetingId) {
-                    const responsePostData = await PatchBillingMeetingKakaoDeposit(
-                        meetingId,
-                        formData,
-                    );
+                    const responsePostData =
+                        await PatchBillingMeetingKakaoDeposit(
+                            meetingId,
+                            formData,
+                        );
                     if (responsePostData.status === 200) {
-                        sendEventToAmplitude('complete kakao deposit id register', {
-                            action: '계속해서 사용하기',
-                        });
+                        sendEventToAmplitude(
+                            'complete kakao deposit id register',
+                            {
+                                action: '계속해서 사용하기',
+                            },
+                        );
                         setKakaoModalOpen(false);
                         setToastMessage('카카오페이 계정이 설정되었습니다.');
                         setToastType('success');
@@ -193,7 +198,11 @@ const BillingKakaoModal = ({ setKakaoModalOpen, meetingName, user }) => {
                                 </label>
                                 <input
                                     type="text"
-                                    value={kakaoId || user?.kakaoDepositInformation?.kakaoDepositId}
+                                    value={
+                                        kakaoId ||
+                                        user?.kakaoDepositInformation
+                                            ?.kakaoDepositId
+                                    }
                                     onChange={(e) => setKakaoId(e.target.value)}
                                     placeholder="카카오톡 ID를 입력하세요"
                                     className="w-full h-14 px-4 bg-[#f2f2f7] rounded-2xl border-none outline-none text-[15px] placeholder:text-[#c7c7cc] focus:bg-[#e5e5ea] transition-colors"
@@ -214,39 +223,37 @@ const BillingKakaoModal = ({ setKakaoModalOpen, meetingName, user }) => {
                                 </div>
                             </div>
 
-
-                                <div>
-                                    <label className="block text-[13px] font-semibold text-[#191f28] mb-3">
-                                        사용 방식
-                                    </label>
-                                    <div className="space-y-2">
-                                        <button
-                                            onClick={() =>
-                                                setActionType('이번에만 사용하기')
-                                            }
-                                            className={`w-full h-12 px-4 rounded-xl text-[14px] font-medium transition-all ${
-                                                actionType === '이번에만 사용하기'
-                                                    ? 'bg-[#fee500] text-[#191f28] shadow-lg shadow-[#fee500]/20'
-                                                    : 'bg-[#f2f2f7] text-[#191f28] hover:bg-[#e5e5ea]'
-                                            }`}
-                                        >
-                                            이번에만 사용하기
-                                        </button>
-                                        <button
-                                            onClick={() =>
-                                                setActionType('계속해서 사용하기')
-                                            }
-                                            className={`w-full h-12 px-4 rounded-xl text-[14px] font-medium transition-all ${
-                                                actionType === '계속해서 사용하기'
-                                                    ? 'bg-[#fee500] text-[#191f28] shadow-lg shadow-[#fee500]/20'
-                                                    : 'bg-[#f2f2f7] text-[#191f28] hover:bg-[#e5e5ea]'
-                                            }`}
-                                        >
-                                            계속해서 사용하기
-                                        </button>
-                                    </div>
+                            <div>
+                                <label className="block text-[13px] font-semibold text-[#191f28] mb-3">
+                                    사용 방식
+                                </label>
+                                <div className="space-y-2">
+                                    <button
+                                        onClick={() =>
+                                            setActionType('이번에만 사용하기')
+                                        }
+                                        className={`w-full h-12 px-4 rounded-xl text-[14px] font-medium transition-all ${
+                                            actionType === '이번에만 사용하기'
+                                                ? 'bg-[#fee500] text-[#191f28] shadow-lg shadow-[#fee500]/20'
+                                                : 'bg-[#f2f2f7] text-[#191f28] hover:bg-[#e5e5ea]'
+                                        }`}
+                                    >
+                                        이번에만 사용하기
+                                    </button>
+                                    <button
+                                        onClick={() =>
+                                            setActionType('계속해서 사용하기')
+                                        }
+                                        className={`w-full h-12 px-4 rounded-xl text-[14px] font-medium transition-all ${
+                                            actionType === '계속해서 사용하기'
+                                                ? 'bg-[#fee500] text-[#191f28] shadow-lg shadow-[#fee500]/20'
+                                                : 'bg-[#f2f2f7] text-[#191f28] hover:bg-[#e5e5ea]'
+                                        }`}
+                                    >
+                                        계속해서 사용하기
+                                    </button>
                                 </div>
-
+                            </div>
 
                             {/* 안내 */}
                             <div className="bg-[#fee500]/10 rounded-2xl p-4 border border-[#fee500]/20">
@@ -269,7 +276,9 @@ const BillingKakaoModal = ({ setKakaoModalOpen, meetingName, user }) => {
                             {(meetingName?.kakao_deposit_information
                                 ?.kakao_deposit_id ||
                                 meetingName?.kakaoDepositInformation
-                                    ?.kakaoDepositId || user?.kakaoDepositInformation?.kakaoDepositId) && (
+                                    ?.kakaoDepositId ||
+                                user?.kakaoDepositInformation
+                                    ?.kakaoDepositId) && (
                                 <button
                                     onClick={handleClear}
                                     disabled={isSaving}

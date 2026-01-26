@@ -127,7 +127,9 @@ const UserSetting = ({ setUserSettingModal, user }) => {
                     </ModalClose>
                     <SettingContainer>
                         {isGuest ? (
-                            <Button onClick={handleLogin}>로그인 하러가기</Button>
+                            <Button onClick={handleLogin}>
+                                로그인 하러가기
+                            </Button>
                         ) : (
                             <>
                                 <Button onClick={handleLogOut}>로그아웃</Button>

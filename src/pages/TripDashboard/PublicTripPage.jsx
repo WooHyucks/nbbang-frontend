@@ -109,17 +109,17 @@ const PublicTripPage = () => {
         return {
             member_id: managerFromSettlement?.member_id,
             name: managerFromSettlement?.name || meeting.manager_name || '총무',
-                bank:
-                    managerFromSettlement?.bank ||
-                    meeting.bank_name ||
-                    managerFromSettlement?.toss_bank,
-                account:
-                    managerFromSettlement?.account_number ||
-                    meeting.account_number ||
-                    managerFromSettlement?.toss_account,
+            bank:
+                managerFromSettlement?.bank ||
+                meeting.bank_name ||
+                managerFromSettlement?.toss_bank,
+            account:
+                managerFromSettlement?.account_number ||
+                meeting.account_number ||
+                managerFromSettlement?.toss_account,
             kakao_link: managerFromSettlement?.kakao_link || meeting.kakao_link,
             toss_bank: managerFromSettlement?.toss_bank || meeting.bank_name,
-                toss_account:
+            toss_account:
                 managerFromSettlement?.toss_account || meeting.account_number,
         };
     }, [data, finalSettlement, meeting]);
@@ -235,8 +235,7 @@ const PublicTripPage = () => {
         }
 
         if (!window.Kakao.isInitialized()) {
-            const kakaoSdkKey =
-                import.meta.env.VITE_KAKAO_SDK_KEY;
+            const kakaoSdkKey = import.meta.env.VITE_KAKAO_SDK_KEY;
             window.Kakao.init(kakaoSdkKey);
         }
 
@@ -340,12 +339,12 @@ const PublicTripPage = () => {
                     </p>
                     <div className="flex flex-col gap-2 w-full">
                         {!isNotFound && (
-                    <button
+                            <button
                                 onClick={handleRefresh}
                                 className="w-full px-4 py-2 rounded-lg bg-blue-500 text-white font-semibold hover:bg-blue-600 transition-colors"
-                    >
-                        다시 시도
-                    </button>
+                            >
+                                다시 시도
+                            </button>
                         )}
                         <button
                             onClick={() => navigate('/')}
@@ -447,13 +446,21 @@ const PublicTripPage = () => {
                             <div className="text-2xl font-bold text-gray-900">
                                 {formatNumber(
                                     (() => {
-                                        const initialGonggeum = publicBudget.initial_gonggeum || 0;
-                                        const addedGonggeum = publicBudget.added_gonggeum || 0;
-                                        const exchangeRate = publicBudget.applied_exchange_rate || 1;
-                                        
+                                        const initialGonggeum =
+                                            publicBudget.initial_gonggeum || 0;
+                                        const addedGonggeum =
+                                            publicBudget.added_gonggeum || 0;
+                                        const exchangeRate =
+                                            publicBudget.applied_exchange_rate ||
+                                            1;
+
                                         // added_gonggeum이 있으면 환율을 곱해서 더하고, 없으면 initial_gonggeum만 표시
                                         if (addedGonggeum > 0) {
-                                            return Math.round(initialGonggeum + (addedGonggeum * exchangeRate));
+                                            return Math.round(
+                                                initialGonggeum +
+                                                    addedGonggeum *
+                                                        exchangeRate,
+                                            );
                                         } else {
                                             return initialGonggeum;
                                         }
@@ -492,7 +499,7 @@ const PublicTripPage = () => {
                                             ),
                                         )}
                                         원)
-                            </span>
+                                    </span>
                                 )}
                             </div>
                         </div>
@@ -523,16 +530,16 @@ const PublicTripPage = () => {
                             {publicBudget.remaining_gonggeum_foreign !== null &&
                                 publicBudget.remaining_gonggeum_foreign !==
                                     undefined && (
-                                <div className="text-xs text-gray-500 mt-1 text-right">
-                                    (
-                                    {formatNumber(
-                                        Math.round(
-                                            publicBudget.remaining_gonggeum_foreign,
-                                        ),
-                                    )}{' '}
-                                    {meeting.target_currency || 'KRW'})
-                                </div>
-                            )}
+                                    <div className="text-xs text-gray-500 mt-1 text-right">
+                                        (
+                                        {formatNumber(
+                                            Math.round(
+                                                publicBudget.remaining_gonggeum_foreign,
+                                            ),
+                                        )}{' '}
+                                        {meeting.target_currency || 'KRW'})
+                                    </div>
+                                )}
                         </div>
 
                         {/* 실제 총 잔액 강조 */}
@@ -637,8 +644,9 @@ const PublicTripPage = () => {
                                 </span>
                                 <span className="text-xl font-bold text-blue-600">
                                     {formatNumber(
-                                        (tripCost.total_public_spent || 0) + 
-                                        (tripCost.total_individual_spent || 0)
+                                        (tripCost.total_public_spent || 0) +
+                                            (tripCost.total_individual_spent ||
+                                                0),
                                     )}
                                     원
                                 </span>
@@ -653,9 +661,12 @@ const PublicTripPage = () => {
                         <a
                             href={`/meeting/share/trip?uuid=${uuid}`}
                             onClick={() => {
-                                sendEventToAmplitude('click go to settlement dashboard', {
-                                    uuid: uuid,
-                                });
+                                sendEventToAmplitude(
+                                    'click go to settlement dashboard',
+                                    {
+                                        uuid: uuid,
+                                    },
+                                );
                             }}
                             className="flex items-center justify-between bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-6 py-4 rounded-2xl shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all group"
                         >
@@ -786,11 +797,16 @@ const PublicTripPage = () => {
                                                 <button
                                                     disabled={!tossLink}
                                                     onClick={() => {
-                                                        sendEventToAmplitude('click trip toss deposit link', {
-                                                            uuid: uuid,
-                                                            member_id: member.member_id,
-                                                            is_tipped: isTipped,
-                                                        });
+                                                        sendEventToAmplitude(
+                                                            'click trip toss deposit link',
+                                                            {
+                                                                uuid: uuid,
+                                                                member_id:
+                                                                    member.member_id,
+                                                                is_tipped:
+                                                                    isTipped,
+                                                            },
+                                                        );
                                                         if (tossLink)
                                                             window.location.href =
                                                                 tossLink;
@@ -808,11 +824,16 @@ const PublicTripPage = () => {
                                                     target="_blank"
                                                     rel="noopener noreferrer"
                                                     onClick={() => {
-                                                        sendEventToAmplitude('click trip kakao deposit link', {
-                                                            uuid: uuid,
-                                                            member_id: member.member_id,
-                                                            is_tipped: isTipped,
-                                                        });
+                                                        sendEventToAmplitude(
+                                                            'click trip kakao deposit link',
+                                                            {
+                                                                uuid: uuid,
+                                                                member_id:
+                                                                    member.member_id,
+                                                                is_tipped:
+                                                                    isTipped,
+                                                            },
+                                                        );
                                                     }}
                                                     className={`px-3 py-2 rounded-lg text-sm font-semibold text-center ${
                                                         kakaoLink

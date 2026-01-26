@@ -18,7 +18,7 @@ const AiMeetingDetail = ({ meetingData }) => {
     // 총액 계산
     const totalAmount = paymentItems.reduce(
         (sum, item) => sum + (item.price || 0) * (item.quantity || 1),
-        0
+        0,
     );
 
     // 다음 이미지
@@ -28,7 +28,9 @@ const AiMeetingDetail = ({ meetingData }) => {
 
     // 이전 이미지
     const handlePrevImage = () => {
-        setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
+        setCurrentImageIndex(
+            (prev) => (prev - 1 + images.length) % images.length,
+        );
     };
 
     return (
@@ -55,11 +57,14 @@ const AiMeetingDetail = ({ meetingData }) => {
                     <div className="relative w-full bg-gray-100">
                         <div className="relative aspect-[4/3] overflow-hidden">
                             <img
-                                src={images[currentImageIndex]?.url || images[currentImageIndex]}
+                                src={
+                                    images[currentImageIndex]?.url ||
+                                    images[currentImageIndex]
+                                }
                                 alt={`영수증 ${currentImageIndex + 1}`}
                                 className="w-full h-full object-contain"
                             />
-                            
+
                             {/* 이미지 네비게이션 */}
                             {images.length > 1 && (
                                 <>
@@ -67,21 +72,29 @@ const AiMeetingDetail = ({ meetingData }) => {
                                         onClick={handlePrevImage}
                                         className="absolute left-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 rounded-full transition-colors"
                                     >
-                                        <ChevronLeft size={20} className="text-white" />
+                                        <ChevronLeft
+                                            size={20}
+                                            className="text-white"
+                                        />
                                     </button>
                                     <button
                                         onClick={handleNextImage}
                                         className="absolute right-2 top-1/2 -translate-y-1/2 p-2 bg-black/50 hover:bg-black/70 rounded-full transition-colors"
                                     >
-                                        <ChevronRight size={20} className="text-white" />
+                                        <ChevronRight
+                                            size={20}
+                                            className="text-white"
+                                        />
                                     </button>
-                                    
+
                                     {/* 이미지 인디케이터 */}
                                     <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
                                         {images.map((_, index) => (
                                             <button
                                                 key={index}
-                                                onClick={() => setCurrentImageIndex(index)}
+                                                onClick={() =>
+                                                    setCurrentImageIndex(index)
+                                                }
                                                 className={`w-1.5 h-1.5 rounded-full transition-all ${
                                                     index === currentImageIndex
                                                         ? 'bg-white w-4'
@@ -135,29 +148,33 @@ const AiMeetingDetail = ({ meetingData }) => {
                                             </div>
                                             <p className="text-sm font-semibold text-gray-900 ml-4">
                                                 {formatNumber(
-                                                    (item.price || 0) * (item.quantity || 1)
+                                                    (item.price || 0) *
+                                                        (item.quantity || 1),
                                                 )}
                                                 원
                                             </p>
                                         </div>
-                                        
+
                                         {/* 참여자 뱃지 */}
-                                        {item.attendees && item.attendees.length > 0 && (
-                                            <div className="flex flex-wrap gap-2 mt-2">
-                                                {item.attendees.map((attendee, idx) => (
-                                                    <span
-                                                        key={idx}
-                                                        className="px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium"
-                                                    >
-                                                        {attendee}
-                                                    </span>
-                                                ))}
-                                            </div>
-                                        )}
+                                        {item.attendees &&
+                                            item.attendees.length > 0 && (
+                                                <div className="flex flex-wrap gap-2 mt-2">
+                                                    {item.attendees.map(
+                                                        (attendee, idx) => (
+                                                            <span
+                                                                key={idx}
+                                                                className="px-2 py-1 bg-blue-50 text-blue-700 rounded-lg text-xs font-medium"
+                                                            >
+                                                                {attendee}
+                                                            </span>
+                                                        ),
+                                                    )}
+                                                </div>
+                                            )}
                                     </div>
                                 ))}
                             </div>
-                            
+
                             {/* 총액 */}
                             <div className="mt-4 pt-4 border-t border-gray-200">
                                 <div className="flex items-baseline justify-between">
@@ -178,6 +195,3 @@ const AiMeetingDetail = ({ meetingData }) => {
 };
 
 export default AiMeetingDetail;
-
-
-

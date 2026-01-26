@@ -2,8 +2,7 @@ import React from 'react';
 import { SocialLoginForm } from './SocialLoginForm';
 
 const KakaoLogin = () => {
-    const kakaoClientId =
-        import.meta.env.VITE_KAKAO_CLIENT_ID;
+    const kakaoClientId = import.meta.env.VITE_KAKAO_CLIENT_ID;
     const kakaoRedirectUri =
         import.meta.env.VITE_KAKAO_REDIRECT_URI ||
         'https://nbbang.shop/kakao-redirect';
@@ -32,8 +31,7 @@ const KakaoLogin = () => {
 };
 
 const NaverLogin = () => {
-    const naverClientId =
-        import.meta.env.VITE_NAVER_CLIENT_ID;
+    const naverClientId = import.meta.env.VITE_NAVER_CLIENT_ID;
     const naverRedirectUri =
         import.meta.env.VITE_NAVER_REDIRECT_URI ||
         'https://nbbang.shop/naver-redirect';
@@ -54,7 +52,6 @@ const NaverLogin = () => {
 };
 
 const GoogleLogin = () => {
-    
     const googleRedirectUri =
         import.meta.env.VITE_GOOGLE_REDIRECT_URI ||
         'https://nbbang.shop/google-redirect';

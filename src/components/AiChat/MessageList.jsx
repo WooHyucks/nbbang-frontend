@@ -5,7 +5,13 @@ import SummaryCard from './cards/SummaryCard';
 import DraftCard from './cards/DraftCard';
 import AiLoadingMessage from './AiLoadingMessage';
 
-const MessageList = ({ messages, isLoading, user, onUserUpdate, isModifyMode = false }) => {
+const MessageList = ({
+    messages,
+    isLoading,
+    user,
+    onUserUpdate,
+    isModifyMode = false,
+}) => {
     const messagesEndRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -29,11 +35,17 @@ const MessageList = ({ messages, isLoading, user, onUserUpdate, isModifyMode = f
                     </p>
                 </div>
             ) : (
-                <div className="space-y-3 sm:space-y-4 pt-2" ref={messagesEndRef}>
+                <div
+                    className="space-y-3 sm:space-y-4 pt-2"
+                    ref={messagesEndRef}
+                >
                     {messages.map((message) => {
                         if (message.type === 'summary_card') {
                             return (
-                                <SummaryCard key={message.id} data={message.data} />
+                                <SummaryCard
+                                    key={message.id}
+                                    data={message.data}
+                                />
                             );
                         }
                         if (message.type === 'draft_card') {
@@ -43,7 +55,10 @@ const MessageList = ({ messages, isLoading, user, onUserUpdate, isModifyMode = f
                                     className="flex items-start gap-2 sm:gap-3 w-full justify-start"
                                 >
                                     <div className="flex-shrink-0 mt-1">
-                                        <Sparkles size={18} className="text-[#3182F6]" />
+                                        <Sparkles
+                                            size={18}
+                                            className="text-[#3182F6]"
+                                        />
                                     </div>
                                     <div className="w-full max-w-[90%] sm:max-w-[85%] md:max-w-[75%]">
                                         <DraftCard
@@ -51,7 +66,9 @@ const MessageList = ({ messages, isLoading, user, onUserUpdate, isModifyMode = f
                                             imageUrls={message.imageUrls}
                                             onConfirm={message.onConfirm}
                                             isViewerMode={message.isViewerMode}
-                                            onSettlementCreated={message.onSettlementCreated}
+                                            onSettlementCreated={
+                                                message.onSettlementCreated
+                                            }
                                             uuid={message.uuid}
                                             meetingId={message.meetingId}
                                             user={user}
@@ -73,7 +90,10 @@ const MessageList = ({ messages, isLoading, user, onUserUpdate, isModifyMode = f
                                 >
                                     {message.sender === 'ai' && (
                                         <div className="flex-shrink-0 mt-1">
-                                            <Sparkles size={18} className="text-[#3182F6]" />
+                                            <Sparkles
+                                                size={18}
+                                                className="text-[#3182F6]"
+                                            />
                                         </div>
                                     )}
                                     <div className="w-full max-w-[90%] sm:max-w-[85%] md:max-w-[75%] flex justify-end">
@@ -88,9 +108,13 @@ const MessageList = ({ messages, isLoading, user, onUserUpdate, isModifyMode = f
                                 </div>
                             );
                         }
-                        return <MessageBubble key={message.id} message={message} />;
+                        return (
+                            <MessageBubble key={message.id} message={message} />
+                        );
                     })}
-                    {isLoading && <AiLoadingMessage isModifyMode={isModifyMode} />}
+                    {isLoading && (
+                        <AiLoadingMessage isModifyMode={isModifyMode} />
+                    )}
                     <div ref={messagesEndRef} />
                 </div>
             )}
@@ -99,4 +123,3 @@ const MessageList = ({ messages, isLoading, user, onUserUpdate, isModifyMode = f
 };
 
 export default MessageList;
-

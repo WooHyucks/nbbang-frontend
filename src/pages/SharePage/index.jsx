@@ -89,18 +89,18 @@ const SharePage = () => {
 
     // 모든 payments의 데이터 수집
     const payments = meetingData?.payments || [];
-    
+
     // 모든 payments에서 이미지 수집
     const allImages = payments.flatMap((p) => p.images || []);
     const imageUrls = allImages.map((img) => img.url || img);
-    
+
     // 모든 payments에서 paymentItems 수집
-    const allPaymentItems = payments.flatMap((p) => 
+    const allPaymentItems = payments.flatMap((p) =>
         (p.paymentItems || []).map((item) => ({
             ...item,
             // 각 payment의 payer 정보를 item에 추가
             payer: item.payer || p.payer || p.paid_by || null,
-        }))
+        })),
     );
 
     const handleNextImage = () => {
@@ -108,7 +108,9 @@ const SharePage = () => {
     };
 
     const handlePrevImage = () => {
-        setCurrentImageIndex((prev) => (prev - 1 + imageUrls.length) % imageUrls.length);
+        setCurrentImageIndex(
+            (prev) => (prev - 1 + imageUrls.length) % imageUrls.length,
+        );
     };
 
     // AI 데이터 형식으로 변환
@@ -116,9 +118,7 @@ const SharePage = () => {
         meeting_name: meetingData?.name || 'AI 정산',
         date: meetingData?.date || '',
         members: [
-            ...new Set(
-                allPaymentItems.flatMap((item) => item.attendees || [])
-            ),
+            ...new Set(allPaymentItems.flatMap((item) => item.attendees || [])),
         ],
         items: allPaymentItems.map((item) => ({
             name: item.name || '항목',
@@ -146,10 +146,17 @@ const SharePage = () => {
             </div>
 
             {/* 채팅 히스토리 (ReadOnly) */}
-            <div ref={scrollContainerRef} className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 sm:py-6">
+            <div
+                ref={scrollContainerRef}
+                className="flex-1 overflow-y-auto px-3 sm:px-4 py-4 sm:py-6"
+            >
                 <div className="max-w-full sm:max-w-2xl mx-auto space-y-3 sm:space-y-4">
                     {/* 사용자 요청사항 말풍선 */}
-                    <UserPromptBubble userPrompt={meetingData?.userPrompt || meetingData?.prompt} />
+                    <UserPromptBubble
+                        userPrompt={
+                            meetingData?.userPrompt || meetingData?.prompt
+                        }
+                    />
 
                     {/* 사용자 메시지: 영수증 이미지들 */}
                     {imageUrls.length > 0 && (
@@ -169,18 +176,22 @@ const SharePage = () => {
                                     </div>
                                 ) : (
                                     <div className="grid grid-cols-2 gap-1 bg-white rounded-2xl rounded-br-sm overflow-hidden shadow-sm p-1 w-full max-w-full sm:max-w-[400px]">
-                                        {imageUrls.slice(0, 4).map((url, index) => (
-                                            <img
-                                                key={index}
-                                                src={url}
-                                                alt={`영수증 ${index + 1}`}
-                                                className="w-full h-auto object-cover aspect-square rounded cursor-pointer hover:opacity-90 transition-opacity"
-                                                onClick={() => {
-                                                    setCurrentImageIndex(index);
-                                                    setIsLightboxOpen(true);
-                                                }}
-                                            />
-                                        ))}
+                                        {imageUrls
+                                            .slice(0, 4)
+                                            .map((url, index) => (
+                                                <img
+                                                    key={index}
+                                                    src={url}
+                                                    alt={`영수증 ${index + 1}`}
+                                                    className="w-full h-auto object-cover aspect-square rounded cursor-pointer hover:opacity-90 transition-opacity"
+                                                    onClick={() => {
+                                                        setCurrentImageIndex(
+                                                            index,
+                                                        );
+                                                        setIsLightboxOpen(true);
+                                                    }}
+                                                />
+                                            ))}
                                     </div>
                                 )}
                             </div>
@@ -216,7 +227,7 @@ const SharePage = () => {
                             />
                         </div>
                     </div>
-                    
+
                     {/* AI로 정산하러 가기 버튼 (공유 페이지 하단) */}
                     <div className="flex items-start gap-2 sm:gap-3 justify-start mt-4">
                         <div className="flex-shrink-0 mt-1">
@@ -225,10 +236,13 @@ const SharePage = () => {
                         <div className="w-full max-w-[90%] sm:max-w-[85%] md:max-w-[75%]">
                             <button
                                 onClick={() => {
-                                    sendEventToAmplitude('click go to ai settlement from result page', {
-                                        uuid: uuid,
-                                        source: 'share_page',
-                                    });
+                                    sendEventToAmplitude(
+                                        'click go to ai settlement from result page',
+                                        {
+                                            uuid: uuid,
+                                            source: 'share_page',
+                                        },
+                                    );
                                     navigate('/');
                                 }}
                                 className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 active:from-blue-600 active:to-purple-600 transition-all text-sm font-semibold active:scale-95 shadow-sm touch-manipulation min-h-[44px]"
@@ -272,7 +286,10 @@ const SharePage = () => {
                                 }}
                                 className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
                             >
-                                <ChevronRight size={24} className="text-white" />
+                                <ChevronRight
+                                    size={24}
+                                    className="text-white"
+                                />
                             </button>
                         </>
                     )}
@@ -309,4 +326,3 @@ const SharePage = () => {
 };
 
 export default SharePage;
-

@@ -28,7 +28,7 @@ const BillingPage = () => {
     useEffect(() => {
         const fetchMeetingData = async () => {
             if (!meetingId) return;
-            
+
             setIsLoading(true);
             try {
                 const data = await getMeetingDetail(meetingId);
@@ -36,12 +36,18 @@ const BillingPage = () => {
                 // meetingType === 'ai' 또는 is_ai === true 체크
                 setIsAiType(
                     data?.meetingType === 'ai' ||
-                    data?.is_ai === true ||
-                    data?.type === 'AI'
+                        data?.is_ai === true ||
+                        data?.type === 'AI',
                 );
-                
+
                 // 모임 정산 페이지 조회 이벤트 (AI 타입이 아닐 때만)
-                if (!(data?.meetingType === 'ai' || data?.is_ai === true || data?.type === 'AI')) {
+                if (
+                    !(
+                        data?.meetingType === 'ai' ||
+                        data?.is_ai === true ||
+                        data?.type === 'AI'
+                    )
+                ) {
                     sendEventToAmplitude('view meeting settlement page', {
                         meeting_id: meetingId,
                     });
@@ -73,7 +79,7 @@ const BillingPage = () => {
             setToastMessage('링크가 복사되었습니다.');
             setToastType('success');
             setToastPopUp(true);
-            
+
             sendEventToAmplitude('share ai settlement', {
                 meeting_id: meetingId,
                 meeting_name: meetingData?.name,

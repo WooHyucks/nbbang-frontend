@@ -12,18 +12,18 @@ const AiChatView = ({ meetingData, isOwner = false }) => {
 
     // 모든 payments의 데이터 수집
     const payments = meetingData?.payments || [];
-    
+
     // 모든 payments에서 이미지 수집
     const allImages = payments.flatMap((p) => p.images || []);
     const imageUrls = allImages.map((img) => img.url || img);
-    
+
     // 모든 payments에서 paymentItems 수집
-    const allPaymentItems = payments.flatMap((p) => 
+    const allPaymentItems = payments.flatMap((p) =>
         (p.paymentItems || []).map((item) => ({
             ...item,
             // 각 payment의 payer 정보를 item에 추가
             payer: item.payer || p.payer || p.paid_by || null,
-        }))
+        })),
     );
 
     // AI 데이터 형식으로 변환
@@ -31,9 +31,7 @@ const AiChatView = ({ meetingData, isOwner = false }) => {
         meeting_name: meetingData?.name || 'AI 정산',
         date: meetingData?.date || '',
         members: [
-            ...new Set(
-                allPaymentItems.flatMap((item) => item.attendees || [])
-            ),
+            ...new Set(allPaymentItems.flatMap((item) => item.attendees || [])),
         ],
         items: allPaymentItems.map((item) => ({
             name: item.name || '항목',
@@ -51,7 +49,9 @@ const AiChatView = ({ meetingData, isOwner = false }) => {
 
     // 이전 이미지
     const handlePrevImage = () => {
-        setCurrentImageIndex((prev) => (prev - 1 + imageUrls.length) % imageUrls.length);
+        setCurrentImageIndex(
+            (prev) => (prev - 1 + imageUrls.length) % imageUrls.length,
+        );
     };
 
     // 이미지 클릭 시 라이트박스 열기
@@ -77,19 +77,27 @@ const AiChatView = ({ meetingData, isOwner = false }) => {
                                                 src={imageUrls[0]}
                                                 alt="영수증"
                                                 className="w-full h-auto cursor-pointer hover:opacity-90 transition-opacity"
-                                                onClick={() => handleImageClick(0)}
+                                                onClick={() =>
+                                                    handleImageClick(0)
+                                                }
                                             />
                                         ) : (
                                             <div className="grid grid-cols-2 gap-1 p-1">
-                                                {imageUrls.slice(0, 4).map((url, index) => (
-                                                    <img
-                                                        key={index}
-                                                        src={url}
-                                                        alt={`영수증 ${index + 1}`}
-                                                        className="w-full h-auto object-cover aspect-square cursor-pointer hover:opacity-90 transition-opacity rounded"
-                                                        onClick={() => handleImageClick(index)}
-                                                    />
-                                                ))}
+                                                {imageUrls
+                                                    .slice(0, 4)
+                                                    .map((url, index) => (
+                                                        <img
+                                                            key={index}
+                                                            src={url}
+                                                            alt={`영수증 ${index + 1}`}
+                                                            className="w-full h-auto object-cover aspect-square cursor-pointer hover:opacity-90 transition-opacity rounded"
+                                                            onClick={() =>
+                                                                handleImageClick(
+                                                                    index,
+                                                                )
+                                                            }
+                                                        />
+                                                    ))}
                                             </div>
                                         )}
                                     </div>
@@ -100,11 +108,15 @@ const AiChatView = ({ meetingData, isOwner = false }) => {
                         {/* AI 메시지: 정산 내역 안내 (왼쪽) */}
                         <div className="flex items-start gap-3">
                             <div className="flex-shrink-0 mt-1">
-                                <Sparkles size={18} className="text-[#3182F6]" />
+                                <Sparkles
+                                    size={18}
+                                    className="text-[#3182F6]"
+                                />
                             </div>
                             <div className="max-w-[85%] md:max-w-[70%] lg:max-w-[60%] bg-gray-100 text-gray-900 rounded-2xl rounded-bl-sm px-4 py-3">
                                 <p className="text-sm leading-relaxed whitespace-pre-wrap break-words">
-                                    {meetingData?.name || '영수증'} 영수증이네요! 내역을 정리해 드립니다.
+                                    {meetingData?.name || '영수증'}{' '}
+                                    영수증이네요! 내역을 정리해 드립니다.
                                 </p>
                             </div>
                         </div>
@@ -112,7 +124,10 @@ const AiChatView = ({ meetingData, isOwner = false }) => {
                         {/* AI 메시지: 정산 요약 카드 (왼쪽) */}
                         <div className="flex items-start gap-3">
                             <div className="flex-shrink-0 mt-1">
-                                <Sparkles size={18} className="text-[#3182F6]" />
+                                <Sparkles
+                                    size={18}
+                                    className="text-[#3182F6]"
+                                />
                             </div>
                             <div className="max-w-[85%] md:max-w-[70%] lg:max-w-[60%]">
                                 <DraftCard
@@ -159,7 +174,10 @@ const AiChatView = ({ meetingData, isOwner = false }) => {
                                 }}
                                 className="absolute right-4 top-1/2 -translate-y-1/2 p-3 bg-white/10 hover:bg-white/20 rounded-full transition-colors"
                             >
-                                <ChevronRight size={24} className="text-white" />
+                                <ChevronRight
+                                    size={24}
+                                    className="text-white"
+                                />
                             </button>
                         </>
                     )}
@@ -196,4 +214,3 @@ const AiChatView = ({ meetingData, isOwner = false }) => {
 };
 
 export default AiChatView;
-

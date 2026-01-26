@@ -21,7 +21,6 @@ const ResultContainar = styled.div.withConfig({
     height: 100%;
     position: relative;
     max-width: 680px;
-
 `;
 const BillingContainer = styled.div`
     width: 100%;
@@ -127,7 +126,8 @@ const BillingSkeletonCard = styled.div`
 `;
 
 const SkeletonText = styled(SkeletonBox).withConfig({
-    shouldForwardProp: (prop) => prop !== 'height' && prop !== 'width' && prop !== 'marginBottom',
+    shouldForwardProp: (prop) =>
+        prop !== 'height' && prop !== 'width' && prop !== 'marginBottom',
 })`
     height: ${(props) => props.height || '16px'};
     width: ${(props) => props.width || '60%'};
@@ -173,8 +173,7 @@ const Billing = ({ payment, meetingName, setMeetingName }) => {
             if (window.Kakao) {
                 const kakao = window.Kakao;
                 if (!kakao.isInitialized()) {
-                    const kakaoSdkKey =
-                        import.meta.env.VITE_KAKAO_SDK_KEY;
+                    const kakaoSdkKey = import.meta.env.VITE_KAKAO_SDK_KEY;
                     // 환경 변수가 있을 때만 초기화
                     if (kakaoSdkKey) {
                         kakao.init(kakaoSdkKey);

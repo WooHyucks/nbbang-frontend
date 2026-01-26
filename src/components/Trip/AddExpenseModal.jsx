@@ -36,7 +36,7 @@ const AddExpenseModal = ({
     const [isLoadingExchangeRate, setIsLoadingExchangeRate] = useState(false);
     const [error, setError] = useState('');
     const calendarRef = useRef(null);
-    
+
     // 외부 클릭 시 캘린더 닫기
     useOnClickOutside(calendarRef, () => {
         setShowCalendar(false);
@@ -376,13 +376,20 @@ const AddExpenseModal = ({
                             onClick={() => setShowCalendar(!showCalendar)}
                             className="w-full min-w-0 px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:border-blue-500 bg-white text-left flex items-center justify-between hover:border-gray-300 transition-colors"
                         >
-                            <span className={date ? 'text-gray-900' : 'text-gray-400'}>
+                            <span
+                                className={
+                                    date ? 'text-gray-900' : 'text-gray-400'
+                                }
+                            >
                                 {date
-                                    ? new Date(date).toLocaleDateString('ko-KR', {
-                                          year: 'numeric',
-                                          month: 'long',
-                                          day: 'numeric',
-                                      })
+                                    ? new Date(date).toLocaleDateString(
+                                          'ko-KR',
+                                          {
+                                              year: 'numeric',
+                                              month: 'long',
+                                              day: 'numeric',
+                                          },
+                                      )
                                     : '날짜를 선택하세요'}
                             </span>
                             <CalendarIcon size={20} className="text-gray-400" />
@@ -462,14 +469,23 @@ const AddExpenseModal = ({
                                 <Calendar
                                     value={date ? new Date(date) : new Date()}
                                     onChange={(selectedDate) => {
-                                        const formattedDate = formatDateToLocal(selectedDate);
+                                        const formattedDate =
+                                            formatDateToLocal(selectedDate);
                                         setDate(formattedDate);
                                         setShowCalendar(false);
                                     }}
                                     locale="ko-KR"
                                     formatDay={(locale, date) => date.getDate()}
                                     formatShortWeekday={(locale, date) => {
-                                        const weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+                                        const weekdays = [
+                                            '일',
+                                            '월',
+                                            '화',
+                                            '수',
+                                            '목',
+                                            '금',
+                                            '토',
+                                        ];
                                         return weekdays[date.getDay()];
                                     }}
                                     showNeighboringMonth={false}
@@ -478,9 +494,13 @@ const AddExpenseModal = ({
                                         return `${date.getFullYear()}년 ${date.getMonth() + 1}월`;
                                     }}
                                     className="w-full border-none"
-                                    tileClassName={({ date: tileDate, view }) => {
+                                    tileClassName={({
+                                        date: tileDate,
+                                        view,
+                                    }) => {
                                         if (view === 'month') {
-                                            const tileDateStr = formatDateToLocal(tileDate);
+                                            const tileDateStr =
+                                                formatDateToLocal(tileDate);
                                             if (tileDateStr === date) {
                                                 return 'bg-blue-500 text-white rounded-lg font-bold';
                                             }

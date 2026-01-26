@@ -22,6 +22,3 @@ export const CURRENCY_MAP = {
     AE: 'AED',
     KR: 'KRW',
 };
-
-
-

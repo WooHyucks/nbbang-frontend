@@ -2,7 +2,11 @@ import styled from 'styled-components';
 
 export const SocialLoginContainer = styled.div.withConfig({
     shouldForwardProp: (prop) => {
-        return prop !== 'backgroundColor' && prop !== 'borderColor' && prop !== 'gapSize';
+        return (
+            prop !== 'backgroundColor' &&
+            prop !== 'borderColor' &&
+            prop !== 'gapSize'
+        );
     },
 })`
     position: relative;
@@ -29,7 +33,11 @@ export const SocialLoginIcon = styled.img.withConfig({
 
 export const Button = styled.button.withConfig({
     shouldForwardProp: (prop) => {
-        return prop !== 'textColor' && prop !== 'backgroundColor' && prop !== 'borderColor';
+        return (
+            prop !== 'textColor' &&
+            prop !== 'backgroundColor' &&
+            prop !== 'borderColor'
+        );
     },
 })`
     color: ${(props) => props.textColor || 'white'};

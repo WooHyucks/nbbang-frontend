@@ -42,11 +42,12 @@ const AddBudgetModal = ({
 
     // 입력된 현지 통화 금액
     const foreignAmount = amount ? Number(amount.replace(/[^0-9]/g, '')) : 0;
-    
+
     // 예상 원화 금액 계산
-    const estimatedKRW = foreignAmount && baseExchangeRate
-        ? Math.round(foreignAmount * baseExchangeRate)
-        : 0;
+    const estimatedKRW =
+        foreignAmount && baseExchangeRate
+            ? Math.round(foreignAmount * baseExchangeRate)
+            : 0;
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -92,14 +93,18 @@ const AddBudgetModal = ({
             handleClose();
         } catch (err) {
             console.error('공금 추가 실패:', err);
-            
+
             // 403 Forbidden 에러 처리 (관리자 권한 없음)
             if (err.response?.status === 403) {
-                const errorDetail = err.response?.data?.detail || err.response?.data?.message;
+                const errorDetail =
+                    err.response?.data?.detail || err.response?.data?.message;
                 if (errorDetail?.includes('관리자가 아닙니다')) {
                     setError('이 모임의 관리자만 공금을 추가할 수 있습니다.');
                 } else {
-                    setError(errorDetail || '권한이 없습니다. 관리자만 공금을 추가할 수 있습니다.');
+                    setError(
+                        errorDetail ||
+                            '권한이 없습니다. 관리자만 공금을 추가할 수 있습니다.',
+                    );
                 }
             } else {
                 setError(
@@ -142,8 +147,7 @@ const AddBudgetModal = ({
     };
 
     const isAllSelected =
-        members.length > 0 &&
-        selectedMemberIds.length === members.length;
+        members.length > 0 && selectedMemberIds.length === members.length;
 
     if (!isOpen) return null;
 
@@ -179,9 +183,8 @@ const AddBudgetModal = ({
                                 type="text"
                                 value={amount}
                                 onChange={(e) => {
-                                    const value = e.target.value.replace(
-                                        /[^0-9]/g,
-                                    );
+                                    const value =
+                                        e.target.value.replace(/[^0-9]/g);
                                     setAmount(value);
                                 }}
                                 placeholder="금액을 입력하세요"
@@ -224,9 +227,8 @@ const AddBudgetModal = ({
                                 </p>
                             ) : (
                                 members.map((member) => {
-                                    const isSelected = selectedMemberIds.includes(
-                                        member.id,
-                                    );
+                                    const isSelected =
+                                        selectedMemberIds.includes(member.id);
                                     return (
                                         <label
                                             key={member.id}
@@ -281,7 +283,12 @@ const AddBudgetModal = ({
                         </button>
                         <button
                             type="submit"
-                            disabled={isLoading || !amount || foreignAmount === 0 || selectedMemberIds.length === 0}
+                            disabled={
+                                isLoading ||
+                                !amount ||
+                                foreignAmount === 0 ||
+                                selectedMemberIds.length === 0
+                            }
                             className="flex-1 px-4 py-3 bg-blue-500 text-white rounded-xl font-semibold hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
                         >
                             {isLoading ? (
@@ -304,4 +311,3 @@ const AddBudgetModal = ({
 };
 
 export default AddBudgetModal;
-

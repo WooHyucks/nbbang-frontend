@@ -28,6 +28,3 @@ export const CurrencyFormatter: React.FC<CurrencyFormatterProps> = ({
 };
 
 export default CurrencyFormatter;
-
-
-

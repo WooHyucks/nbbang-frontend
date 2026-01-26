@@ -80,6 +80,3 @@ export const convertKRWToForeign = (krwAmount, exchangeRate) => {
 export const convertForeignToKRW = (foreignAmount, exchangeRate) => {
     return foreignAmount / exchangeRate;
 };
-
-
-

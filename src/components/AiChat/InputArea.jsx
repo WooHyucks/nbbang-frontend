@@ -1,6 +1,13 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Send, Image as ImageIcon, Plane, Calculator, Users, X } from 'lucide-react';
+import {
+    Send,
+    Image as ImageIcon,
+    Plane,
+    Calculator,
+    Users,
+    X,
+} from 'lucide-react';
 import { PostSimpleSettlementData, postMeetingrData } from '../../api/api';
 import { sendEventToAmplitude } from '@/utils/amplitude';
 import AiAnalysisLimitModal from '../Modal/AiAnalysisLimitModal';
@@ -31,10 +38,10 @@ const QUICK_ACTIONS = [
     },
 ];
 
-const InputArea = ({ 
-    value = '', 
-    onChange, 
-    onSend, 
+const InputArea = ({
+    value = '',
+    onChange,
+    onSend,
     showSuggestions = false,
     isLoading = false,
     fileInputRef: externalFileInputRef,
@@ -51,23 +58,28 @@ const InputArea = ({
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [isDragging, setIsDragging] = useState(false);
     const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-    
+
     // 모바일 이미지 크롭 관련 상태
     const [isCropperOpen, setIsCropperOpen] = useState(false);
     const [cropperImageFile, setCropperImageFile] = useState(null);
-    
+
     // 모바일 환경 감지
     const [isMobile, setIsMobile] = useState(false);
-    
+
     React.useEffect(() => {
         const checkMobile = () => {
-            setIsMobile(window.innerWidth < 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent));
+            setIsMobile(
+                window.innerWidth < 768 ||
+                    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+                        navigator.userAgent,
+                    ),
+            );
         };
         checkMobile();
         window.addEventListener('resize', checkMobile);
         return () => window.removeEventListener('resize', checkMobile);
     }, []);
-    
+
     // 디버깅: 크롭 모달 상태 추적
     React.useEffect(() => {
         console.log('🔍 크롭 모달 상태:', {
@@ -82,21 +94,21 @@ const InputArea = ({
     // 날짜가 바뀌었는지 확인하여 카운트 갱신
     const lastAiUsageDate = user?.lastAiUsageDate || user?.last_ai_usage_date;
     const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD 형식
-    
+
     // 날짜가 다르면 카운트를 0으로 처리 (하루가 지났으므로)
     const isDateChanged = lastAiUsageDate && lastAiUsageDate !== today;
-    const rawDailyImageAnalysisCount = 
-        user?.dailyImageAnalysisCount ?? 
-        user?.daily_image_analysis_count ?? 
-        0;
-    
+    const rawDailyImageAnalysisCount =
+        user?.dailyImageAnalysisCount ?? user?.daily_image_analysis_count ?? 0;
+
     // 날짜가 바뀌었으면 카운트를 0으로, 아니면 백엔드에서 받은 값 사용
-    const dailyImageAnalysisCount = isDateChanged ? 0 : rawDailyImageAnalysisCount;
-    
+    const dailyImageAnalysisCount = isDateChanged
+        ? 0
+        : rawDailyImageAnalysisCount;
+
     const maxDailyLimit = 5;
     const remainingCount = Math.max(0, maxDailyLimit - dailyImageAnalysisCount);
     const isLimitReached = dailyImageAnalysisCount >= maxDailyLimit;
-    
+
     // 디버깅: 사용량 정보 확인
     React.useEffect(() => {
         if (user) {
@@ -110,7 +122,16 @@ const InputArea = ({
                 isLimitReached,
             });
         }
-    }, [user, lastAiUsageDate, today, isDateChanged, rawDailyImageAnalysisCount, dailyImageAnalysisCount, remainingCount, isLimitReached]);
+    }, [
+        user,
+        lastAiUsageDate,
+        today,
+        isDateChanged,
+        rawDailyImageAnalysisCount,
+        dailyImageAnalysisCount,
+        remainingCount,
+        isLimitReached,
+    ]);
 
     const internalFileInputRef = useRef(null);
     const internalCameraInputRef = useRef(null);
@@ -149,13 +170,16 @@ const InputArea = ({
         const files = Array.from(e.target.files || []);
         if (files.length > 0) {
             const imageFiles = Array.from(files).filter((file) =>
-                file.type.startsWith('image/')
+                file.type.startsWith('image/'),
             );
-            
+
             if (imageFiles.length > 0) {
                 // 모바일 환경에서만 단일 이미지 선택 시 크롭 모달 열기
                 if (isMobile && imageFiles.length === 1) {
-                    console.log('🖼️ 이미지 선택됨, 크롭 모달 열기:', imageFiles[0]);
+                    console.log(
+                        '🖼️ 이미지 선택됨, 크롭 모달 열기:',
+                        imageFiles[0],
+                    );
                     setCropperImageFile(imageFiles[0]);
                     setIsCropperOpen(true);
                 } else {
@@ -177,7 +201,7 @@ const InputArea = ({
     const addFiles = (files) => {
         // 이미지 파일만 필터링
         const imageFiles = Array.from(files).filter((file) =>
-            file.type.startsWith('image/')
+            file.type.startsWith('image/'),
         );
         if (imageFiles.length > 0) {
             // 최대 5개까지만 허용
@@ -187,12 +211,12 @@ const InputArea = ({
             });
         }
     };
-    
+
     // Blob를 File로 변환하는 유틸리티 함수
     const blobToFile = (blob, fileName) => {
         return new File([blob], fileName, { type: blob.type });
     };
-    
+
     // 크롭 완료 핸들러
     const handleCropComplete = (croppedBlob) => {
         if (cropperImageFile) {
@@ -208,7 +232,7 @@ const InputArea = ({
         setIsCropperOpen(false);
         setCropperImageFile(null);
     };
-    
+
     // 크롭 취소 핸들러
     const handleCropCancel = () => {
         setIsCropperOpen(false);
@@ -298,12 +322,17 @@ const InputArea = ({
                             responseMeeting.headers['location'] ||
                             responseMeeting.headers.Location;
                         if (locationHeader) {
-                            sendEventToAmplitude('create new simpleSettlement', '');
+                            sendEventToAmplitude(
+                                'create new simpleSettlement',
+                                '',
+                            );
                             // location 헤더가 "meeting/123" 형태면 그대로 사용, 아니면 meetingId 추출
                             if (locationHeader.startsWith('meeting/')) {
                                 navigate(`/${locationHeader}`);
                             } else {
-                                const meetingId = locationHeader.split('/').pop();
+                                const meetingId = locationHeader
+                                    .split('/')
+                                    .pop();
                                 navigate(`/meeting/${meetingId}`);
                             }
                         }
@@ -335,7 +364,11 @@ const InputArea = ({
                                 className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition-all active:scale-95 whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed ${action.style}`}
                             >
                                 <Icon size={14} />
-                                <span>{isActionCreating ? '생성 중...' : action.label}</span>
+                                <span>
+                                    {isActionCreating
+                                        ? '생성 중...'
+                                        : action.label}
+                                </span>
                             </button>
                         );
                     })}
@@ -368,7 +401,6 @@ const InputArea = ({
                         })}
                     </div>
                 )}
-
 
                 {/* 입력 필드 */}
                 <div
@@ -406,16 +438,18 @@ const InputArea = ({
                         />
                         <textarea
                             value={value}
-                            onChange={(e) => onChange && onChange(e.target.value)}
+                            onChange={(e) =>
+                                onChange && onChange(e.target.value)
+                            }
                             onKeyPress={handleKeyPress}
                             placeholder={
                                 isDragging
                                     ? '이미지를 여기에 놓으세요'
                                     : isModifyMode
-                                        ? '수정할 내용을 말해주세요. (예: 소주는 철수 빼줘, 2차는 우혁이가 샀어)'
-                                        : showSuggestions
-                                            ? '영수증을 올리거나 텍스트로 입력하세요. (예: 우혁(총무), 준영, 상영이 만선호프에서 5만원 씀)'
-                                            : '영수증을 올리거나 텍스트로 입력하세요. (예: 우혁(총무), 준영, 상영이 만선호프에서 5만원 씀)'
+                                      ? '수정할 내용을 말해주세요. (예: 소주는 철수 빼줘, 2차는 우혁이가 샀어)'
+                                      : showSuggestions
+                                        ? '영수증을 올리거나 텍스트로 입력하세요. (예: 우혁(총무), 준영, 상영이 만선호프에서 5만원 씀)'
+                                        : '영수증을 올리거나 텍스트로 입력하세요. (예: 우혁(총무), 준영, 상영이 만선호프에서 5만원 씀)'
                             }
                             className="w-full h-[100px] min-h-[56px] md:min-h-[64px] px-4 py-3 md:px-6 md:py-4 bg-[#F9FAFB] border-0 rounded-[20px] resize-none focus:outline-none focus:ring-2 focus:ring-[#3182F6] text-sm md:text-base text-[#191F28] placeholder-[#8B95A1]"
                             rows={1}
@@ -443,14 +477,22 @@ const InputArea = ({
                                     } disabled:opacity-50 disabled:cursor-not-allowed`}
                                     aria-label="이미지 업로드"
                                     disabled={isLoading || isLimitReached}
-                                    title={isLimitReached ? '오늘 이미지 분석 횟수를 모두 사용했습니다' : '이미지 업로드'}
+                                    title={
+                                        isLimitReached
+                                            ? '오늘 이미지 분석 횟수를 모두 사용했습니다'
+                                            : '이미지 업로드'
+                                    }
                                 >
                                     <ImageIcon size={18} />
                                 </button>
                             </div>
                             <button
                                 onClick={handleSend}
-                                disabled={(!value.trim() && selectedFiles.length === 0) || isLoading}
+                                disabled={
+                                    (!value.trim() &&
+                                        selectedFiles.length === 0) ||
+                                    isLoading
+                                }
                                 className="p-2.5 bg-[#3182F6] text-white rounded-full md:hover:bg-[#1B64DA] transition-all active:scale-95 active:bg-[#1B64DA] disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
                                 aria-label="메시지 전송"
                             >
@@ -474,7 +516,7 @@ const InputArea = ({
                     // 모달만 닫으면 됨
                 }}
             />
-            
+
             {/* 모바일 이미지 크롭 모달 */}
             {cropperImageFile && (
                 <MobileImageCropper
@@ -489,4 +531,3 @@ const InputArea = ({
 };
 
 export default InputArea;
-

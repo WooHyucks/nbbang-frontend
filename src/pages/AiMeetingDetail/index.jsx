@@ -41,7 +41,7 @@ const AiMeetingDetail = () => {
             try {
                 const data = await getAiMeetingById(id);
                 setCurrentMeeting(data);
-                
+
                 // 채팅 히스토리 초기화
                 initializeChatHistory(data);
             } catch (err) {
@@ -88,7 +88,7 @@ const AiMeetingDetail = () => {
             date: meetingData?.date || '',
             members: [
                 ...new Set(
-                    paymentItems.flatMap((item) => item.attendees || [])
+                    paymentItems.flatMap((item) => item.attendees || []),
                 ),
             ],
             items: paymentItems.map((item) => ({
@@ -169,7 +169,7 @@ const AiMeetingDetail = () => {
                 date: modifiedMeeting?.date || '',
                 members: [
                     ...new Set(
-                        paymentItems.flatMap((item) => item.attendees || [])
+                        paymentItems.flatMap((item) => item.attendees || []),
                     ),
                 ],
                 items: paymentItems.map((item) => ({
@@ -250,7 +250,7 @@ const AiMeetingDetail = () => {
             setToastMessage('링크가 복사되었습니다.');
             setToastType('success');
             setToastPopUp(true);
-            
+
             sendEventToAmplitude('share ai settlement', {
                 meeting_id: id,
                 meeting_name: currentMeeting?.name,
@@ -318,20 +318,27 @@ const AiMeetingDetail = () => {
                         <div
                             key={message.id}
                             className={`flex items-start gap-2 sm:gap-3 ${
-                                message.type === 'user' ? 'justify-end' : 'justify-start'
+                                message.type === 'user'
+                                    ? 'justify-end'
+                                    : 'justify-start'
                             }`}
                         >
                             {/* AI 아이콘 */}
                             {message.type === 'ai' && (
                                 <div className="flex-shrink-0 mt-1">
-                                    <Sparkles size={18} className="text-[#3182F6]" />
+                                    <Sparkles
+                                        size={18}
+                                        className="text-[#3182F6]"
+                                    />
                                 </div>
                             )}
 
                             {/* 메시지 컨텐츠 */}
                             <div
                                 className={`w-full max-w-[90%] sm:max-w-[85%] md:max-w-[75%] ${
-                                    message.type === 'user' ? 'flex justify-end' : ''
+                                    message.type === 'user'
+                                        ? 'flex justify-end'
+                                        : ''
                                 }`}
                             >
                                 {message.content.type === 'text' && (
@@ -373,7 +380,9 @@ const AiMeetingDetail = () => {
                                     <div className="w-full">
                                         <DraftCard
                                             aiData={message.content.aiData}
-                                            imageUrls={message.content.imageUrls}
+                                            imageUrls={
+                                                message.content.imageUrls
+                                            }
                                             isViewerMode={true}
                                         />
                                     </div>
@@ -386,10 +395,15 @@ const AiMeetingDetail = () => {
                     {isModifying && (
                         <div className="flex items-start gap-2 sm:gap-3 justify-start">
                             <div className="flex-shrink-0 mt-1">
-                                <Sparkles size={18} className="text-[#3182F6]" />
+                                <Sparkles
+                                    size={18}
+                                    className="text-[#3182F6]"
+                                />
                             </div>
                             <div className="w-full max-w-[90%] sm:max-w-[85%] md:max-w-[75%] bg-white text-gray-900 rounded-2xl rounded-bl-sm border border-gray-200 shadow-sm px-4 sm:px-5 py-3 sm:py-3.5">
-                                <p className="text-sm sm:text-base">수정 중...</p>
+                                <p className="text-sm sm:text-base">
+                                    수정 중...
+                                </p>
                             </div>
                         </div>
                     )}
@@ -408,7 +422,7 @@ const AiMeetingDetail = () => {
                         isLoading={isModifying}
                     />
                 </div>
-                
+
                 {/* 공유하기 버튼 */}
                 <div className="px-4 pb-3 pt-2">
                     <button

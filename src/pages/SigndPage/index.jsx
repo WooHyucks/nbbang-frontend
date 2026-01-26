@@ -20,7 +20,6 @@ const SigndContainer = styled.div`
     margin-right: auto;
     text-align: center;
     position: relative;
-    
 `;
 
 const OAuthContainer = styled.div`
@@ -29,7 +28,6 @@ const OAuthContainer = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
-
 `;
 
 const SigndLineComent = styled.p`
@@ -132,7 +130,7 @@ const SigndPage = () => {
                 )}
             </OAuthContainer>
             <SigndLineComent>또는</SigndLineComent>
-            <div className='flex justify-center w-full'>
+            <div className="flex justify-center w-full">
                 <SingnUpLink
                     to="/sign-up"
                     style={{

@@ -6,7 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta
             name="description"
-            content="엔빵 - 여행 경비 정산을 쉽고 빠르게! AI가 영수증을 분석하고 자동으로 정산해드립니다."
+            content="엔빵 - 복잡한 계산은 AI가, 송금은 멤버가 원클릭으로."
         />
         <meta
             name="keywords"
@@ -17,7 +17,10 @@
         <!-- Open Graph / Facebook -->
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://nbbang.shop/" />
-        <meta property="og:title" content="엔빵 - 여행 경비 정산 서비스" />
+        <meta
+            property="og:title"
+            content="엔빵 - 복잡한 계산은 AI가, 송금은 멤버가 원클릭으로."
+        />
         <meta
             property="og:description"
             content="AI가 영수증을 분석하고 자동으로 정산해드립니다."
@@ -32,7 +35,7 @@
         <meta property="twitter:url" content="https://nbbang.shop/" />
         <meta
             property="twitter:title"
-            content="엔빵 - 여행 경비 정산 서비스"
+            content="엔빵 - 복잡한 계산은 AI가, 송금은 멤버가 원클릭으로."
         />
         <meta
             property="twitter:description"
@@ -43,7 +46,7 @@
             content="https://nbbang.shop/nbbangMetaPng_v1.png"
         />
 
-        <title>엔빵 - 여행 경비 정산 서비스</title>
+        <title>엔빵 - 복잡한 계산은 AI가, 송금은 멤버가 원클릭으로.</title>
 
         <!-- Kakao SDK -->
         <script
@@ -86,9 +89,12 @@
                             );
 
                             // 5분마다 업데이트 체크
-                            setInterval(() => {
-                                registration.update();
-                            }, 5 * 60 * 1000);
+                            setInterval(
+                                () => {
+                                    registration.update();
+                                },
+                                5 * 60 * 1000,
+                            );
 
                             // 즉시 한 번 체크
                             registration.update();
@@ -102,7 +108,10 @@
                                     'statechange',
                                     () => {
                                         if (newWorker.state === 'installed') {
-                                            if (navigator.serviceWorker.controller) {
+                                            if (
+                                                navigator.serviceWorker
+                                                    .controller
+                                            ) {
                                                 console.log(
                                                     '[SW] New version available, activating...',
                                                 );

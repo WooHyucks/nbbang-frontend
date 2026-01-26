@@ -15,7 +15,7 @@ interface MobileImageCropperProps {
 
 /**
  * 모바일 웹앱(PWA) 전용 이미지 크롭 컴포넌트
- * 
+ *
  * 토스 앱과 유사한 네이티브 앱 경험을 제공합니다.
  * - 터치 전용 인터페이스
  * - Safe Area 대응
@@ -106,7 +106,7 @@ const MobileImageCropper: React.FC<MobileImageCropperProps> = ({
                     }
                 },
                 'image/jpeg', // 또는 'image/png', 'image/webp' 등
-                0.9 // 품질 (0.0 ~ 1.0)
+                0.9, // 품질 (0.0 ~ 1.0)
             );
         } catch (error) {
             console.error('크롭 처리 중 오류:', error);
@@ -157,9 +157,11 @@ const MobileImageCropper: React.FC<MobileImageCropperProps> = ({
                             // 크롭 박스 초기 크기 설정 (자유로운 비율)
                             if (cropperRef.current?.cropper) {
                                 const cropper = cropperRef.current.cropper;
-                                const containerData = cropper.getContainerData();
+                                const containerData =
+                                    cropper.getContainerData();
                                 const cropBoxWidth = containerData.width * 0.8;
-                                const cropBoxHeight = containerData.height * 0.8;
+                                const cropBoxHeight =
+                                    containerData.height * 0.8;
                                 cropper.setCropBoxData({
                                     width: cropBoxWidth,
                                     height: cropBoxHeight,
@@ -206,4 +208,3 @@ const MobileImageCropper: React.FC<MobileImageCropperProps> = ({
 };
 
 export default MobileImageCropper;
-

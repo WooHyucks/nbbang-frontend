@@ -644,7 +644,10 @@ const Meeting = ({ user }) => {
                         disabled={deletingMeetingId === meeting.id}
                         style={{
                             opacity: deletingMeetingId === meeting.id ? 0.6 : 1,
-                            cursor: deletingMeetingId === meeting.id ? 'not-allowed' : 'pointer',
+                            cursor:
+                                deletingMeetingId === meeting.id
+                                    ? 'not-allowed'
+                                    : 'pointer',
                         }}
                     >
                         {deletingMeetingId === meeting.id ? (
@@ -991,7 +994,7 @@ const Meeting = ({ user }) => {
                                 }}
                             >
                                 <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center">
-                                        <Plane className="w-5 h-5" />
+                                    <Plane className="w-5 h-5" />
                                 </div>
                                 <span className="text-[15px] font-semibold whitespace-nowrap">
                                     여행 정산 만들기
@@ -1067,8 +1070,8 @@ const Meeting = ({ user }) => {
                         whileTap={{ scale: 0.98 }}
                         onClick={() => navigate('/trip')}
                     >
-                                <Plane size={20} strokeWidth={2.5} />
-                                여행 정산
+                        <Plane size={20} strokeWidth={2.5} />
+                        여행 정산
                     </StyledButton>
                 </div>
             </AddButtonContainer>

@@ -69,12 +69,12 @@ const ModalClose = styled.button`
     border-radius: 50%;
     transition: all 0.2s ease;
     color: #8e8e93;
-    
+
     &:hover {
         background: #e5e5ea;
         transform: scale(1.1);
     }
-    
+
     &:active {
         transform: scale(0.95);
     }
@@ -93,12 +93,12 @@ const ModalCloseBottmBar = styled.button`
     transition: all 0.2s ease;
     box-shadow: 0 4px 12px rgba(254, 229, 0, 0.3);
     margin-top: 8px;
-    
+
     &:hover {
         transform: translateY(-2px);
         box-shadow: 0 6px 16px rgba(254, 229, 0, 0.4);
     }
-    
+
     &:active {
         transform: translateY(0);
         box-shadow: 0 2px 8px rgba(254, 229, 0, 0.3);
@@ -120,7 +120,7 @@ const LinkExplain = styled.div`
     line-height: 1.6;
     text-align: center;
     margin-bottom: 8px;
-    
+
     strong {
         color: #fee500;
         background: linear-gradient(135deg, #fee500 0%, #fdd835 100%);
@@ -185,16 +185,18 @@ const KakaoIdExplain = ({ setModalOpen }) => {
                     <ModalClose onClick={() => setModalOpen(false)}>
                         <X size={18} />
                     </ModalClose>
-                    
+
                     <LinkExplain>
                         <strong>카카오 링크란?</strong>
                         <br />
                         <br />
-                        카카오링크를 등록하면 카카오톡으로<br />
+                        카카오링크를 등록하면 카카오톡으로
+                        <br />
                         더 쉽게 송금을 받을 수 있어요! 😎
                         <br />
                         <br />
-                        아래에서 카카오 링크<br />
+                        아래에서 카카오 링크
+                        <br />
                         발급 받는 법을 함께 알아볼까요?
                         <Icon>🏃🏻‍♂️</Icon>
                     </LinkExplain>
@@ -205,19 +207,20 @@ const KakaoIdExplain = ({ setModalOpen }) => {
                             카카오톡 더보기 상단의 QR코드 아이콘을 눌러주세요
                         </Explainfirst>
                         <Img alt="explain3" src="/images/explain3.jpeg" />
-                        
+
                         <Explain>
                             <StepNumber>2</StepNumber>
                             QR코드 아래 송금코드를 눌러주세요
                         </Explain>
                         <Img alt="explain2" src="/images/explain2.jpeg" />
-                        
+
                         <Explainfirst>
                             <StepNumber>3</StepNumber>
-                            송금 코드 복사 아이콘을 눌러서 송금코드를 복사해주세요
+                            송금 코드 복사 아이콘을 눌러서 송금코드를
+                            복사해주세요
                         </Explainfirst>
                         <Img alt="explain" src="/images/explain.jpeg" />
-                        
+
                         <Explain>
                             <StepNumber>4</StepNumber>
                             이제 카카오톡 송금링크를 등록하러 가볼까요?

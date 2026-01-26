@@ -215,8 +215,7 @@ const TripDashboard = () => {
         }
 
         if (!window.Kakao.isInitialized()) {
-            const kakaoSdkKey =
-                import.meta.env.VITE_KAKAO_SDK_KEY;
+            const kakaoSdkKey = import.meta.env.VITE_KAKAO_SDK_KEY;
             window.Kakao.init(kakaoSdkKey);
         }
 
@@ -258,8 +257,7 @@ const TripDashboard = () => {
         }
 
         if (!window.Kakao.isInitialized()) {
-            const kakaoSdkKey =
-                import.meta.env.VITE_KAKAO_SDK_KEY;
+            const kakaoSdkKey = import.meta.env.VITE_KAKAO_SDK_KEY;
             window.Kakao.init(kakaoSdkKey);
         }
 

@@ -20,14 +20,16 @@ const AiLoadingMessage = ({ isModifyMode = false }) => {
     const [currentMessageIndex, setCurrentMessageIndex] = useState(0);
     const [isFading, setIsFading] = useState(false);
 
-    const loadingMessages = isModifyMode ? MODIFY_LOADING_MESSAGES : CREATE_LOADING_MESSAGES;
+    const loadingMessages = isModifyMode
+        ? MODIFY_LOADING_MESSAGES
+        : CREATE_LOADING_MESSAGES;
 
     useEffect(() => {
         const interval = setInterval(() => {
             setIsFading(true);
             setTimeout(() => {
-                setCurrentMessageIndex((prev) => 
-                    (prev + 1) % loadingMessages.length
+                setCurrentMessageIndex(
+                    (prev) => (prev + 1) % loadingMessages.length,
                 );
                 setIsFading(false);
             }, 300); // 페이드 아웃 시간
@@ -73,4 +75,3 @@ const AiLoadingMessage = ({ isModifyMode = false }) => {
 };
 
 export default AiLoadingMessage;
-

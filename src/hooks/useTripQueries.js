@@ -1,8 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import {
-    getPublicTripResult,
-    getTripSettlementResult,
-} from '../api/tripApi';
+import { getPublicTripResult, getTripSettlementResult } from '../api/tripApi';
 
 /**
  * 공개용 Trip Query (UUID 기반, 인증 불필요)
@@ -27,6 +24,3 @@ export const useMeetingResultQuery = (meetingId) => {
         refetchInterval: 3000, // 3초마다 폴링
     });
 };
-
-
-

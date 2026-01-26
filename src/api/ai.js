@@ -53,4 +53,3 @@ export const analyzeReceipt = async (files = [], prompt = '') => {
         throw error;
     }
 };
-

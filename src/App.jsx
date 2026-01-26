@@ -46,7 +46,7 @@ function App() {
 
                 // 2. 토큰 확인 및 게스트 로그인 처리
                 const existingToken = Cookies.get('authToken');
-                
+
                 if (!existingToken) {
                     // Case A: 토큰 없음 → 게스트 로그인 자동 실행
                     try {
@@ -58,7 +58,8 @@ function App() {
                                     expires: 36500, // 약 100년
                                     path: '/',
                                     sameSite: 'Strict',
-                                    secure: window.location.protocol === 'https:',
+                                    secure:
+                                        window.location.protocol === 'https:',
                                 });
                             }
                         }
@@ -88,70 +89,64 @@ function App() {
                 <LoadingSpinner />
             ) : (
                 <div className="bg-white w-full">
-                        <Router>
-                            <Routes>
-                                <Route path="/signd" element={<SigndPage />} />
-                                <Route
-                                    path="/kakao-redirect"
-                                    element={<KakaoRedirect />}
-                                />
-                                <Route
-                                    path="/naver-redirect"
-                                    element={<NaverRedirect />}
-                                />
-                                <Route
-                                    path="/google-redirect"
-                                    element={<GooglesRedirect />}
-                                />
-                                <Route index element={<MainPage />} />
-                                <Route
-                                    path="/meeting/ai/:id"
-                                    element={<MainPage />}
-                                />
-                                <Route
-                                    path="/meeting/:meetingId"
-                                    element={<BillingPage />}
-                                />
-                                <Route
-                                    path="/share"
-                                    element={<ShareRouter />}
-                                />
-                                <Route
-                                    path="/share/ai"
-                                    element={<SharePage />}
-                                />
-                                <Route path="/sign-up" element={<SignUp />} />
-                                <Route path="/sign-in" element={<SignIn />} />
-                                <Route
-                                    path="/user-protocol"
-                                    element={<UserProtocolPage />}
-                                />
-                                <Route
-                                    path="/simple-settlement/:meetingId"
-                                    element={<SimpleSettlementPage />}
-                                />
-                                <Route
-                                    path="/server-error"
-                                    element={<ServerErrorPage />}
-                                />
-                                <Route path="/trip" element={<TripPage />} />
-                                <Route
-                                    path="/trip/:meetingId/dashboard"
-                                    element={<TripDashboard />}
-                                />
-                                {/* 공유 페이지 (UUID 기반) */}
-                                <Route
-                                    path="/meeting/share/trip"
-                                    element={<SharedTripPage />}
-                                />
-                                {/* 여행 정산 결과 페이지 */}
-                                <Route
-                                    path="/meeting/trip-page"
-                                    element={<TripDashboardPage />}
-                                />
-                            </Routes>
-                        </Router>
-                    </div>
+                    <Router>
+                        <Routes>
+                            <Route path="/signd" element={<SigndPage />} />
+                            <Route
+                                path="/kakao-redirect"
+                                element={<KakaoRedirect />}
+                            />
+                            <Route
+                                path="/naver-redirect"
+                                element={<NaverRedirect />}
+                            />
+                            <Route
+                                path="/google-redirect"
+                                element={<GooglesRedirect />}
+                            />
+                            <Route index element={<MainPage />} />
+                            <Route
+                                path="/meeting/ai/:id"
+                                element={<MainPage />}
+                            />
+                            <Route
+                                path="/meeting/:meetingId"
+                                element={<BillingPage />}
+                            />
+                            <Route path="/share" element={<ShareRouter />} />
+                            <Route path="/share/ai" element={<SharePage />} />
+                            <Route path="/sign-up" element={<SignUp />} />
+                            <Route path="/sign-in" element={<SignIn />} />
+                            <Route
+                                path="/user-protocol"
+                                element={<UserProtocolPage />}
+                            />
+                            <Route
+                                path="/simple-settlement/:meetingId"
+                                element={<SimpleSettlementPage />}
+                            />
+                            <Route
+                                path="/server-error"
+                                element={<ServerErrorPage />}
+                            />
+                            <Route path="/trip" element={<TripPage />} />
+                            <Route
+                                path="/trip/:meetingId/dashboard"
+                                element={<TripDashboard />}
+                            />
+                            {/* 공유 페이지 (UUID 기반) */}
+                            <Route
+                                path="/meeting/share/trip"
+                                element={<SharedTripPage />}
+                            />
+                            {/* 여행 정산 결과 페이지 */}
+                            <Route
+                                path="/meeting/trip-page"
+                                element={<TripDashboardPage />}
+                            />
+                        </Routes>
+                    </Router>
+                </div>
             )}
         </div>
     );
@@ -195,11 +190,15 @@ function ShareRouter() {
                     <p className="text-sm text-gray-600 mb-4">
                         공유 링크 정보를 불러올 수 없습니다.
                     </p>
-                    
+
                     <div className="bg-gray-100 p-3 rounded text-xs text-left break-all text-gray-500 mb-4 font-mono">
-                        <p><strong>Debug Info:</strong></p>
+                        <p>
+                            <strong>Debug Info:</strong>
+                        </p>
                         <p className="mt-1">URL: {window.location.href}</p>
-                        <p className="mt-1">Query: {window.location.search || '(없음)'}</p>
+                        <p className="mt-1">
+                            Query: {window.location.search || '(없음)'}
+                        </p>
                     </div>
 
                     <button

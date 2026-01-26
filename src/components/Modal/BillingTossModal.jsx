@@ -29,12 +29,7 @@ const banks = [
     '토스뱅크',
 ];
 
-const BillingTossModal = ({
-    setTossModalOpen,
-    meetingName,
-    user,
-}) => {
-
+const BillingTossModal = ({ setTossModalOpen, meetingName, user }) => {
     const { meetingId: urlMeetingId } = useParams();
     const meetingId = urlMeetingId || meetingName?.id; // URL에서 가져오거나 meetingName에서 가져오기
     const [accountNumber, setAccountNumber] = useState(
@@ -101,14 +96,18 @@ const BillingTossModal = ({
             } else if (action === '계속해서 사용하기') {
                 await PatchBillingUserTossDeposit(formData);
                 if (meetingId) {
-                    const responsePostData = await PatchBillingMeetingTossDeposit(
-                        meetingId,
-                        formData,
-                    );
+                    const responsePostData =
+                        await PatchBillingMeetingTossDeposit(
+                            meetingId,
+                            formData,
+                        );
                     if (responsePostData && responsePostData.status === 200) {
-                        sendEventToAmplitude('complete toss deposit id register', {
-                            action: '계속해서 사용하기',
-                        });
+                        sendEventToAmplitude(
+                            'complete toss deposit id register',
+                            {
+                                action: '계속해서 사용하기',
+                            },
+                        );
                         setTossModalOpen(false);
                         setToastMessage('토스 계좌가 설정되었습니다.');
                         setToastType('success');
@@ -235,7 +234,8 @@ const BillingTossModal = ({
                                             }
                                         `}
                                     >
-                                        {bank || user?.tossDepositInformation?.bank}
+                                        {bank ||
+                                            user?.tossDepositInformation?.bank}
                                     </button>
                                 ))}
                             </div>
@@ -248,7 +248,10 @@ const BillingTossModal = ({
                             </label>
                             <input
                                 type="text"
-                                value={accountNumber || user?.tossDepositInformation?.accountNumber}
+                                value={
+                                    accountNumber ||
+                                    user?.tossDepositInformation?.accountNumber
+                                }
                                 onChange={(e) =>
                                     setAccountNumber(
                                         e.target.value.replace(/[^0-9]/g, ''),
@@ -260,39 +263,37 @@ const BillingTossModal = ({
                             />
                         </div>
 
-
-                            <div>
-                                <label className="block text-[13px] font-semibold text-[#191f28] mb-3">
-                                    사용 방식
-                                </label>
-                                <div className="space-y-2">
-                                    <button
-                                        onClick={() =>
-                                            setActionType('이번에만 사용하기')
-                                        }
-                                        className={`w-full h-12 px-4 rounded-xl text-[14px] font-medium transition-all ${
-                                            actionType === '이번에만 사용하기'
-                                                ? 'bg-[#0064ff] text-white shadow-lg shadow-[#0064ff]/20'
-                                                : 'bg-[#f2f2f7] text-[#191f28] hover:bg-[#e5e5ea]'
-                                        }`}
-                                    >
-                                        이번에만 사용하기
-                                    </button>
-                                    <button
-                                        onClick={() =>
-                                            setActionType('계속해서 사용하기')
-                                        }
-                                        className={`w-full h-12 px-4 rounded-xl text-[14px] font-medium transition-all ${
-                                            actionType === '계속해서 사용하기'
-                                                ? 'bg-[#0064ff] text-white shadow-lg shadow-[#0064ff]/20'
-                                                : 'bg-[#f2f2f7] text-[#191f28] hover:bg-[#e5e5ea]'
-                                        }`}
-                                    >
-                                        계속해서 사용하기
-                                    </button>
-                                </div>
+                        <div>
+                            <label className="block text-[13px] font-semibold text-[#191f28] mb-3">
+                                사용 방식
+                            </label>
+                            <div className="space-y-2">
+                                <button
+                                    onClick={() =>
+                                        setActionType('이번에만 사용하기')
+                                    }
+                                    className={`w-full h-12 px-4 rounded-xl text-[14px] font-medium transition-all ${
+                                        actionType === '이번에만 사용하기'
+                                            ? 'bg-[#0064ff] text-white shadow-lg shadow-[#0064ff]/20'
+                                            : 'bg-[#f2f2f7] text-[#191f28] hover:bg-[#e5e5ea]'
+                                    }`}
+                                >
+                                    이번에만 사용하기
+                                </button>
+                                <button
+                                    onClick={() =>
+                                        setActionType('계속해서 사용하기')
+                                    }
+                                    className={`w-full h-12 px-4 rounded-xl text-[14px] font-medium transition-all ${
+                                        actionType === '계속해서 사용하기'
+                                            ? 'bg-[#0064ff] text-white shadow-lg shadow-[#0064ff]/20'
+                                            : 'bg-[#f2f2f7] text-[#191f28] hover:bg-[#e5e5ea]'
+                                    }`}
+                                >
+                                    계속해서 사용하기
+                                </button>
                             </div>
-
+                        </div>
 
                         {/* 안내 */}
                         <div className="bg-[#0064ff]/10 rounded-2xl p-4 border border-[#0064ff]/20">
@@ -316,7 +317,8 @@ const BillingTossModal = ({
                         {(meetingName?.toss_deposit_information
                             ?.account_number ||
                             meetingName?.tossDepositInformation
-                                ?.accountNumber || user?.tossDepositInformation?.accountNumber) && (
+                                ?.accountNumber ||
+                            user?.tossDepositInformation?.accountNumber) && (
                             <button
                                 onClick={handleClear}
                                 disabled={isSaving}

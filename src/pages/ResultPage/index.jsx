@@ -330,7 +330,9 @@ function SharePage() {
                     transition={{ delay: 0.05 }}
                     className="mb-6"
                 >
-                    <UserPromptBubble userPrompt={meetings?.userPrompt || meetings?.prompt} />
+                    <UserPromptBubble
+                        userPrompt={meetings?.userPrompt || meetings?.prompt}
+                    />
                 </motion.div>
 
                 {/* Billing Summary */}

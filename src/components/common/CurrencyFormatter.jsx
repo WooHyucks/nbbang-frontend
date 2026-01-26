@@ -17,6 +17,3 @@ const CurrencyFormatter = ({
 };
 
 export default CurrencyFormatter;
-
-
-
