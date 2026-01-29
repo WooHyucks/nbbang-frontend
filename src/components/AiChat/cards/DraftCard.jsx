@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, Copy, Edit } from 'lucide-react';
 import { createAiMeeting } from '../../../api/api';
@@ -182,6 +182,8 @@ const DraftCard = ({
                 if (onSettlementCreated) {
                     onSettlementCreated(meetingId);
                 }
+                
+                return resultUuid;
             } else {
                 throw new Error('정산 생성 응답에 ID가 없습니다.');
             }
@@ -242,6 +244,61 @@ const DraftCard = ({
         if (meetingId && onSettlementCreated) {
             // 재로드를 트리거하기 위해 meetingId를 다시 전달
             // 실제로는 ChatContainer의 useEffect가 자동으로 처리
+        }
+    };
+
+    const initKakao = () => {
+        if (window.Kakao) {
+            const kakao = window.Kakao;
+            if (!kakao.isInitialized()) {
+                const kakaoSdkKey = import.meta.env.VITE_KAKAO_SDK_KEY;
+                kakao.init(kakaoSdkKey);
+            }
+        }
+    };
+
+    useEffect(() => {
+        initKakao();
+    }, []);
+
+    const handleKakaoShare = async () => {
+        let shareUuid = uuid;
+        
+        if (!shareUuid) {
+            shareUuid = await handleCreateAndCopyLink();
+            if (!shareUuid) return;
+        }
+
+        const shareLink = `${window.location.origin}/share?ai=${shareUuid}`;
+        const meetingName = editedData?.meeting_name || 'AI 정산';
+        
+        // 단순 정산 여부 확인 (기존 로직 활용)
+        // 여기서는 settlementMembers가 있으면 대략적으로 판단하거나 기본값 사용
+        // 정확한 로직은 렌더링 부분에 있어서 가져오기 복잡하므로 제목 위주로 공유
+        
+        if (window.Kakao && window.Kakao.Share) {
+            window.Kakao.Share.sendDefault({
+                objectType: 'feed',
+                content: {
+                    title: 'Nbbang',
+                    description: `${meetingName}의 정산결과 입니다.`,
+                    imageUrl: `${window.location.origin}/kakao_feed.png`,
+                    link: {
+                        webUrl: shareLink,
+                        mobileWebUrl: shareLink,
+                    },
+                },
+                buttons: [
+                    {
+                        title: '정산 내역 확인하러가기',
+                        link: {
+                            webUrl: shareLink,
+                            mobileWebUrl: shareLink,
+                        },
+                    },
+                ],
+                installTalk: true,
+            });
         }
     };
 
@@ -959,10 +1016,10 @@ const DraftCard = ({
                         {/* 액션 버튼 (뷰어 모드가 아닐 때만 표시) */}
                         {!isViewerMode && (
                             <>
-                                <div className="flex gap-2 mb-3">
+                                <div className="flex flex-col sm:flex-row gap-2 mb-3">
                                     {/* 정산 결과 링크 복사 */}
                                     <button
-                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-[#3182F6] text-white rounded-lg md:hover:bg-[#1E6FFF] active:bg-[#1E6FFF] transition-colors text-sm font-medium active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation min-h-[44px]"
+                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[#3182F6] text-white rounded-xl md:hover:bg-[#1E6FFF] active:bg-[#1E6FFF] transition-colors text-sm font-medium active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation min-h-[44px]"
                                         onClick={handleCopyLink}
                                         disabled={isCreating}
                                     >
@@ -971,18 +1028,32 @@ const DraftCard = ({
                                         ) : (
                                             <>
                                                 <Copy size={16} />
-                                                정산 결과 링크
+                                                링크 복사
                                             </>
                                         )}
                                     </button>
 
+                                    {/* 카카오톡 공유 */}
+                                    <button
+                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[#FEE500] text-[#191F28] rounded-xl md:hover:bg-[#FDD835] active:bg-[#FDD835] transition-colors text-sm font-medium active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed touch-manipulation min-h-[44px]"
+                                        onClick={handleKakaoShare}
+                                        disabled={isCreating}
+                                    >
+                                        <img
+                                            src="/images/kakao.png"
+                                            alt="Kakao"
+                                            className="w-4 h-4"
+                                        />
+                                        카카오 공유
+                                    </button>
+
                                     {/* 정산 결과 수정하기 */}
                                     <button
-                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-gray-100 text-gray-700 rounded-lg md:hover:bg-gray-200 active:bg-gray-200 transition-colors text-sm font-medium active:scale-95 touch-manipulation min-h-[44px]"
+                                        className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-white border border-gray-200 text-gray-700 rounded-xl md:hover:bg-gray-50 active:bg-gray-50 transition-colors text-sm font-medium active:scale-95 touch-manipulation min-h-[44px]"
                                         onClick={handleEdit}
                                     >
                                         <Edit size={16} />
-                                        정산 결과 수정
+                                        수정하기
                                     </button>
                                 </div>
 
