@@ -1025,7 +1025,7 @@ const ChatContainer = ({
             </div>
 
             {/* 입력 영역 - 모바일에서는 fixed로 하단 고정 */}
-            <div className="md:relative fixed bottom-0 left-0 right-0 z-40 md:z-auto bg-white md:bg-transparent">
+            <div className="md:relative fixed bottom-0 left-0 right-0 z-30 md:z-auto bg-white md:bg-transparent">
                 <InputArea
                     value={inputValue}
                     onChange={setInputValue}

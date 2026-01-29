@@ -243,7 +243,7 @@ function SharePage() {
                         새로운 정산을 시작해보세요!
                     </p>
                     <Link
-                        to="/signd"
+                        to="/"
                         className="inline-block w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl transition-colors shadow-lg shadow-blue-500/30"
                     >
                         정산 시작하기

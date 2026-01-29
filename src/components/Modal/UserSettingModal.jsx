@@ -110,12 +110,12 @@ const UserSetting = ({ setUserSettingModal, user }) => {
 
     const handleLogOut = () => {
         Cookies.remove('authToken', { path: '/' });
-        navigate('/signd');
+        navigate('/');
     };
 
     const handleLogin = () => {
         setUserSettingModal(false);
-        navigate('/signd');
+        navigate('/');
     };
 
     return (

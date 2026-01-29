@@ -144,7 +144,7 @@ const ReSignModal = ({ secondSetOpenModal }) => {
         try {
             await deleteUser();
             Cookies.remove('authToken', { path: '/' });
-            navigate('/signd');
+            navigate('/');
         } catch (error) {
             console.log('Api 데이터 삭제 실패');
         }

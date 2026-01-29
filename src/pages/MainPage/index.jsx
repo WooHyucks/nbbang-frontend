@@ -47,7 +47,7 @@ const MainPage = () => {
             // 401 (Unauthorized)일 때만 토큰 제거
             if (error.response && error.response.status === 401) {
                 Cookies.remove('authToken', { path: '/' });
-                navigate('/signd');
+                navigate('/');
             }
         }
     };
@@ -143,7 +143,7 @@ const MainPage = () => {
                                             'click login from guest header',
                                             '',
                                         );
-                                        navigate('/signd');
+                                        navigate('/');
                                     }}
                                     className="flex items-center sm:w-[230px] w-full sm:inline gap-2 px-4 py-2  hover:bg-[#1E6FFF] text-white rounded-lg transition-colors text-sm font-medium"
                                     aria-label="로그인하고 저장하기"

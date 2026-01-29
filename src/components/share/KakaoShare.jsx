@@ -46,7 +46,8 @@ const KakaoShare = ({ meetingName }) => {
         // 카카오 공유 API는 절대 URL이 필요하므로 현재 도메인 기반으로 이미지 URL 생성
         const imageUrl = `${window.location.origin}/kakao_feed.png`;
 
-        window.Kakao.Link.sendDefault({
+        if (window.Kakao && window.Kakao.Share) {
+            window.Kakao.Share.sendDefault({
             objectType: 'feed',
             content: {
                 title: 'Nbbang',
@@ -69,7 +70,8 @@ const KakaoShare = ({ meetingName }) => {
                 },
             ],
             installTalk: true,
-        });
+            });
+        }
     };
 
     return (

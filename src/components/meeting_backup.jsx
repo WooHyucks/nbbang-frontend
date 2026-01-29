@@ -251,7 +251,7 @@ const Meeting = ({ user }) => {
 
     const handleLogOut = () => {
         Cookies.remove('authToken');
-        navigate('/signd');
+        navigate('/');
     };
 
     const handleToggleMenu = (meetingId) => {
