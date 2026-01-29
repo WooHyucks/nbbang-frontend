@@ -124,7 +124,6 @@ const MainPage = () => {
                             <div className="text-xl font-bold tracking-tighter text-[#191F28]">
                                 NBBANG<span className="text-[#3182F6]">.</span>
                             </div>{' '}
-                            AI
                         </div>
 
                         {/* 데스크탑 헤더 (채팅 제목 영역) */}
@@ -146,14 +145,13 @@ const MainPage = () => {
                                         );
                                         navigate('/signd');
                                     }}
-                                    className="flex items-center gap-2 px-4 py-2 bg-[#3182F6] hover:bg-[#1E6FFF] text-white rounded-lg transition-colors text-sm font-medium"
+                                    className="flex items-center sm:w-[230px] w-full sm:inline gap-2 px-4 py-2  hover:bg-[#1E6FFF] text-white rounded-lg transition-colors text-sm font-medium"
                                     aria-label="로그인하고 저장하기"
                                 >
-                                    <LogIn size={16} />
                                     <span className="hidden sm:inline">
-                                        로그인하고 저장하기
+
                                     </span>
-                                    <span className="sm:hidden">로그인</span>
+                                    <span className="sm:hidden"></span>
                                 </button>
                             )}
 
@@ -164,9 +162,9 @@ const MainPage = () => {
                                     className="flex items-center gap-2 px-4 py-2 text-[#8B95A1] hover:text-[#333D4B] hover:bg-[#F2F4F6] rounded-lg transition-colors text-sm font-medium"
                                     aria-label="로그아웃"
                                 >
-                                    <LogOut size={16} />
-                                    <span className="hidden sm:inline">
-                                        로그아웃
+
+                                    <span className="hidden sm:inline w-[200px]">
+
                                     </span>
                                 </button>
                             )}

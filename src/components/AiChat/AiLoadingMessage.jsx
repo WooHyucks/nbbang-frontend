@@ -49,7 +49,7 @@ const AiLoadingMessage = ({ isModifyMode = false }) => {
                     }}
                 />
             </div>
-            <div className="bg-gray-100 rounded-2xl px-4 py-3 max-w-[75%] relative min-h-[44px] flex items-center">
+            <div className="bg-gray-100 rounded-2xl px-4 max-w-[75%] relative min-h-[44px] flex items-center">
                 {/* 모든 메시지를 absolute로 겹쳐서 배치 */}
                 {loadingMessages.map((message, index) => (
                     <p

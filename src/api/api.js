@@ -2,18 +2,37 @@ import Cookies from 'js-cookie';
 import axios from 'axios';
 import { BASE_URL } from './config';
 
+// 환경 변수에서 Anon Key 가져오기 (Edge Function 호출 시 필요할 수 있음)
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
 export let Token = () => Cookies.get('authToken');
 
 // 500 에러 발생 시 리다이렉트를 위한 플래그
 let isRedirecting = false;
 
 export const axiosData = () => {
+    const token = Token();
+    const headers = {
+        'Content-Type': 'application/json',
+        // Supabase Gateway는 apikey 헤더를 요구할 수 있음
+        ...(SUPABASE_ANON_KEY && { apikey: SUPABASE_ANON_KEY }),
+    };
+
+    // 토큰이 있을 때만 Bearer 추가
+    if (token) {
+        headers.Authorization = `Bearer ${token}`;
+    }
+
     const instance = axios.create({
         baseURL: BASE_URL,
-        headers: {
-            Authorization: `Bearer ${Token()}`,
-        },
+        headers,
     });
+
+    // 요청 인터셉터: 디버깅용 (필요 시 주석 제거)
+    // instance.interceptors.request.use(config => {
+    //     console.log('[axiosData] Request:', config.method, config.url, config.headers);
+    //     return config;
+    // });
 
     // 응답 인터셉터: 500 에러 감지
     instance.interceptors.response.use(
@@ -34,7 +53,7 @@ export const axiosData = () => {
 
     return instance;
 };
-//
+
 // loging
 export const PostLogData = (logData) => {
     return axiosData().post(`/log`, { data: logData });
@@ -62,8 +81,14 @@ export const deleteUser = () => {
 // guest
 // 게스트 로그인은 토큰 없이 호출 가능하므로 별도 axios 인스턴스 사용
 const axiosWithoutAuth = () => {
+    const headers = {
+        'Content-Type': 'application/json',
+        ...(SUPABASE_ANON_KEY && { apikey: SUPABASE_ANON_KEY }),
+    };
+
     const instance = axios.create({
         baseURL: BASE_URL,
+        headers,
     });
 
     // 응답 인터셉터: 500 에러 감지

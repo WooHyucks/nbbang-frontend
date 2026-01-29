@@ -30,7 +30,7 @@ import AiMeetingDetail from './pages/AiMeetingDetail';
 import QRCodeModal from './components/Modal/QRCodeModal';
 import { AmplitudeSetUserId, initializeAmplitude } from './utils/amplitude';
 import { useEffect, useState } from 'react';
-import LoadingSpinner from './components/common/LodingSpinner';
+import AiResultLoading from './components/common/AiResultLoading';
 import { motion } from 'framer-motion';
 import { postGuestLogin } from './api/api';
 import Cookies from 'js-cookie';
@@ -52,15 +52,17 @@ function App() {
                     try {
                         const response = await postGuestLogin();
                         if (response.status === 201) {
-                            const token = response.data;
-                            if (token) {
+                            // 응답 형식에 따라 토큰 추출 (단순 문자열 또는 객체)
+                            const token = response.data.access_token || response.data;
+                            
+                            if (token && typeof token === 'string') {
                                 Cookies.set('authToken', token, {
                                     expires: 36500, // 약 100년
                                     path: '/',
                                     sameSite: 'Strict',
-                                    secure:
-                                        window.location.protocol === 'https:',
+                                    secure: window.location.protocol === 'https:',
                                 });
+                                console.log('[App] 게스트 로그인 성공 & 토큰 저장 완료');
                             }
                         }
                     } catch (error) {
@@ -83,12 +85,13 @@ function App() {
         initializeApp();
     }, []);
 
+    if (isInitializing) {
+        return <AiResultLoading />;
+    }
+
     return (
-        <div className={isInitializing ? 'flex justify-center' : 'App'}>
-            {isInitializing ? (
-                <LoadingSpinner />
-            ) : (
-                <div className="bg-white w-full">
+        <div className="App">
+            <div className="bg-white w-full">
                     <Router>
                         <Routes>
                             <Route path="/signd" element={<SigndPage />} />
@@ -147,7 +150,7 @@ function App() {
                         </Routes>
                     </Router>
                 </div>
-            )}
+
         </div>
     );
 }

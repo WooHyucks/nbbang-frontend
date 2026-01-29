@@ -436,6 +436,8 @@ const DraftCard = ({
                                             name.startsWith('멤버') ||
                                             name.startsWith('사람') ||
                                             name.startsWith('참여자') ||
+                                            name.startsWith('참석자') ||
+                                            name.startsWith('친구') ||
                                             /^[0-9]/.test(name)
                                         );
                                     });
@@ -464,12 +466,14 @@ const DraftCard = ({
                                 const leaderData = me ? getMemberData(me) : {};
                                 const sanitize = (v) =>
                                     v && v !== 'null' ? v : null;
-                                const leaderTossLink = sanitize(
-                                    leaderData.tossLink,
-                                );
-                                const leaderKakaoLink = sanitize(
-                                    leaderData.kakaoLink,
-                                );
+                                
+                                // 단순 N빵(isSimpleSplit)일 때는 멤버들(others)에게 할당된 리더 송금 링크를 우선 사용
+                                // (백엔드 데이터 구조상 리더 본인에겐 링크가 없고 멤버들에게 리더로의 송금 링크가 있을 수 있음)
+                                const firstMemberData = (isSimpleSplit && others.length > 0) ? getMemberData(others[0]) : {};
+
+                                const leaderTossLink = sanitize(leaderData.tossLink) || sanitize(firstMemberData.tossLink);
+                                const leaderKakaoLink = sanitize(leaderData.kakaoLink) || sanitize(firstMemberData.kakaoLink);
+                                
                                 const leaderDepositCopyText = sanitize(
                                     leaderData.depositCopyText,
                                 );
@@ -524,7 +528,7 @@ const DraftCard = ({
                                                             }
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="w-full sm:w-auto px-4 py-2.5 text-sm flex items-center justify-center gap-2 font-semibold bg-[#1350fe] text-white rounded-xl transition-all md:hover:bg-[#0d3fc7] active:scale-95 active:bg-[#0d3fc7] shadow-sm touch-manipulation min-h-[44px]"
+                                                            className="w-full sm:w-auto md:hidden px-4 py-2.5 text-sm flex items-center justify-center gap-2 font-semibold bg-[#1350fe] text-white rounded-xl transition-all active:scale-95 active:bg-[#0d3fc7] shadow-sm touch-manipulation min-h-[44px]"
                                                         >
                                                             <img
                                                                 src="/images/result_toss.png"
@@ -541,7 +545,7 @@ const DraftCard = ({
                                                             }
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="w-full sm:w-auto px-4 py-2.5 text-sm flex items-center justify-center gap-2 font-semibold bg-[#fee500] text-[#191f28] rounded-xl transition-all md:hover:bg-[#fdd835] active:scale-95 active:bg-[#fdd835] shadow-sm touch-manipulation min-h-[44px]"
+                                                            className="w-full sm:w-auto md:hidden px-4 py-2.5 text-sm flex items-center justify-center gap-2 font-semibold bg-[#fee500] text-[#191f28] rounded-xl transition-all active:scale-95 active:bg-[#fdd835] shadow-sm touch-manipulation min-h-[44px]"
                                                         >
                                                             <img
                                                                 src="/images/kakao 2.png"
@@ -552,7 +556,8 @@ const DraftCard = ({
                                                         </a>
                                                     )}
                                                     {!leaderTossLink &&
-                                                        !leaderKakaoLink && (
+                                                        !leaderKakaoLink && 
+                                                        !leaderDepositCopyText && (
                                                             <div className="w-full px-4 py-2.5 text-sm font-medium bg-gray-100 text-gray-500 rounded-xl text-center">
                                                                 송금 정보 없음
                                                             </div>
@@ -591,9 +596,14 @@ const DraftCard = ({
                                                                         );
                                                                     }
                                                                 }}
-                                                                className="w-full sm:w-auto px-4 py-2.5 text-sm font-medium bg-gray-100 text-gray-700 rounded-xl transition-all md:hover:bg-gray-200 active:scale-95 active:bg-gray-200 touch-manipulation min-h-[44px]"
+                                                                className="w-full sm:w-auto px-4 py-3 text-sm font-medium bg-gray-100 text-gray-700 rounded-xl flex items-center justify-center gap-2 transition-all md:hover:bg-gray-200 active:scale-95 active:bg-gray-200 touch-manipulation min-h-[44px]"
                                                             >
-                                                                계좌 복사
+                                                                <span className="truncate max-w-[200px] sm:max-w-none">
+                                                                    {leaderDepositCopyText}
+                                                                </span>
+                                                                <span className="flex-shrink-0 text-[#3182F6] font-semibold text-xs bg-[#3182F6]/10 px-1.5 py-0.5 rounded">
+                                                                    복사
+                                                                </span>
                                                             </button>
                                                         )}
                                                 </div>

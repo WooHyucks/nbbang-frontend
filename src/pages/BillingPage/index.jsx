@@ -7,7 +7,7 @@ import BillingPayment from '../../components/billing/BillingPayment';
 import AiMeetingDetail from '../../components/billing/AiMeetingDetail';
 import AiSettlementView from '../../components/AiChat/AiSettlementView';
 import { getMeetingDetail } from '../../api/api';
-import LoadingSpinner from '../../components/common/LodingSpinner';
+import AiResultLoading from '../../components/common/AiResultLoading';
 import { Copy } from 'lucide-react';
 import { sendEventToAmplitude } from '../../utils/amplitude';
 import ToastPopUp from '../../components/common/ToastPopUp';
@@ -95,11 +95,7 @@ const BillingPage = () => {
     };
 
     if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-screen">
-                <LoadingSpinner />
-            </div>
-        );
+        return <AiResultLoading />;
     }
 
     // AI 타입일 경우 채팅 스타일 렌더링

@@ -10,7 +10,7 @@ import BillingResultShare from '@/components/share/BillingResultShare';
 import { PatchSimpleSettlementData, getSimpleSettlementData } from '@/api/api';
 import SimpleSettlementResult from '@/components/simpleSettlement/SimpleSettlementResult';
 import QRCodeModal from '@/components/Modal/QRCodeModal';
-import LoadingSpinner from '@/components/common/LodingSpinner';
+import AiResultLoading from '@/components/common/AiResultLoading';
 import { sendEventToAmplitude } from '@/utils/amplitude';
 
 const SimpleSettlement = () => {
@@ -89,11 +89,7 @@ const SimpleSettlement = () => {
     }, []); // 빈 배열로 초기 마운트 시에만 실행
 
     if (isLoading) {
-        return (
-            <div className="flex flex-col h-full bg-white max-w-[450px] mx-auto text-center justify-center items-center min-h-screen">
-                <LoadingSpinner type="circular" size="medium" color="#3182F6" />
-            </div>
-        );
+        return <AiResultLoading />;
     }
 
     return (

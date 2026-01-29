@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getAiMeetingById, modifyMeetingByAi } from '../../api/api';
-import LoadingSpinner from '../../components/common/LodingSpinner';
+import AiResultLoading from '../../components/common/AiResultLoading';
 import { Copy, ChevronLeft, Sparkles } from 'lucide-react';
 import { sendEventToAmplitude } from '../../utils/amplitude';
 import DraftCard from '../../components/AiChat/cards/DraftCard';
@@ -266,11 +266,7 @@ const AiMeetingDetail = () => {
     };
 
     if (isLoading) {
-        return (
-            <div className="flex justify-center items-center h-screen bg-[#F2F4F6]">
-                <LoadingSpinner />
-            </div>
-        );
+        return <AiResultLoading />;
     }
 
     if (error || !currentMeeting) {

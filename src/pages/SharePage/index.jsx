@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { getAiMeetingByUuid } from '../../api/api';
-import LoadingSpinner from '../../components/common/LodingSpinner';
+
 import { ChevronLeft, X, ChevronRight, Sparkles } from 'lucide-react';
 import DraftCard from '../../components/AiChat/cards/DraftCard';
 import UserPromptBubble from '../../components/common/UserPromptBubble';
 import { sendEventToAmplitude } from '../../utils/amplitude';
+import AiResultLoading from '@/components/common/AiResultLoading';
+
 
 /**
  * AI 정산 공유 페이지 (Guest View) - ReadOnly 모드
@@ -61,7 +63,7 @@ const SharePage = () => {
     if (isLoading) {
         return (
             <div className="flex justify-center items-center h-screen bg-[#F2F4F6]">
-                <LoadingSpinner />
+                <AiResultLoading />
             </div>
         );
     }
